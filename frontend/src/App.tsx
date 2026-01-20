@@ -1,0 +1,85 @@
+
+import React from 'react';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
+import { LoginPage } from './pages/LoginPage';
+import AdminPage from './pages/admin/AdminPage';
+import PersonalPage from './pages/staff/PersonalPage';
+import BrukarePage from './pages/user/BrukarePage';
+import { TaskProvider } from './context/TaskContext';
+import { AuthProvider } from './context/AuthContext';
+import { RoleGate } from './components/RoleGate';
+import { TokenInspector } from './components/TokenInspector';
+
+import { useAuth } from './context/AuthContext';
+
+/**
+ * A component to protect routes based on authentication and roles
+ */
+const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: ("Admin" | "Personal" | "Brukare")[] }> = ({ children, allowedRoles }) => {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <RoleGate
+      allowedRoles={allowedRoles}
+      fallback={<Navigate to="/" replace />}
+    >
+      {children}
+    </RoleGate>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <TaskProvider>
+        <HashRouter>
+          <div className="font-sans antialiased text-gray-900 bg-gray-50 min-h-screen">
+            <Routes>
+              {/* Public route */}
+              <Route path="/" element={<LoginPage />} />
+
+              {/* Role-protected routes */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={["Admin"]}>
+                    <AdminPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/staff"
+                element={
+                  <ProtectedRoute allowedRoles={["Personal", "Admin"]}>
+                    <PersonalPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user"
+                element={
+                  <ProtectedRoute allowedRoles={["Brukare", "Personal", "Admin"]}>
+                    <BrukarePage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+
+            {/* Global Debug Tools */}
+            <TokenInspector />
+          </div>
+        </HashRouter>
+      </TaskProvider>
+    </AuthProvider>
+  );
+};
+
+export default App;

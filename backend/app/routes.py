@@ -25,6 +25,86 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 def get_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
 
+# --- Protected Lookups (requires login) ---
+# Units, Staff, Users
+
+# --- Units ---
+@router.get("/units", response_model=List[schemas.Unit])
+def get_units(
+    db: Session = Depends(db.get_db),
+    current_user: models.User = Depends(auth.get_current_user),
+):
+    # Admin: alla units
+    if current_user.role == "admin":
+        return db.query(models.Unit).all()
+
+    # Admin: bara de units admin är kopplad till (inte alla)    
+    if current_user.role == "unit_admin":
+        return current_user.admin_units
+    
+    # Staff/User: bara sin unit
+    if not current_user.unit_id:
+        return []
+
+    return db.query(models.Unit).filter(models.Unit.id == current_user.unit_id).all()
+
+
+# --- Staff ---
+@router.get("/staff", response_model=List[schemas.User])
+def get_staff(
+    db: Session = Depends(db.get_db),
+    current_user: models.User = Depends(auth.get_current_user),
+):
+    staff_roles = ["staff", "admin", "unit_admin"]
+
+    if current_user.role == "admin":
+        return db.query(models.User).filter(models.User.role.in_(staff_roles)).all()
+
+    if current_user.role == "unit_admin":
+        allowed_unit_ids = [unit.id for unit in current_user.admin_units]
+        if not allowed_unit_ids:
+            return []            
+        return db.query(models.User).filter(
+            models.User.role.in_(staff_roles),
+            models.User.unit_id.in_(allowed_unit_ids)
+        ).all()
+
+    if not current_user.unit_id:
+        return []
+    return db.query(models.User).filter(
+        models.User.role.in_(staff_roles),
+        models.User.unit_id == current_user.unit_id
+    ).all()
+
+
+# --- Users ---
+@router.get("/users", response_model=List[schemas.User])
+def get_users(
+    db: Session = Depends(db.get_db),
+    current_user: models.User = Depends(auth.get_current_user),
+):
+    if current_user.role == "admin":
+        return db.query(models.User).filter(models.User.role == "user").all()
+
+    if current_user.role == "unit_admin":
+        allowed_unit_ids = [unit.id for unit in current_user.admin_units]
+        if not allowed_unit_ids:
+            return []
+
+        return db.query(models.User).filter(
+            models.User.role == "user",
+            models.User.unit_id.in_(allowed_unit_ids)
+        ).all()
+
+    if not current_user.unit_id:
+        return []
+
+    return db.query(models.User).filter(
+        models.User.role == "user",
+        models.User.unit_id == current_user.unit_id
+    ).all()
+
+
 # --- Schedule ---
 @router.get("/schedule/day", response_model=schemas.DaySchedule)
 def get_day_schedule(

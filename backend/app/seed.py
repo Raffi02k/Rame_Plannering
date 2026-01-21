@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
 from . import models, db, auth
-import json
 
 def seed_data():
     db_session = db.SessionLocal()
-    
+
     # Check if data exists
     if db_session.query(models.Unit).first():
         print("Data already seeded.")
@@ -14,49 +13,68 @@ def seed_data():
 
     # --- UNITS ---
     units = [
-        models.Unit(id='u1', name='Daglig verksamhet Kronan'),
-        models.Unit(id='u2', name='SÄBO Källstorpsgården'),
+        models.Unit(id="u1", name="Daglig verksamhet Kronan", type="lss"),
+        models.Unit(id="u2", name="SÄBO Källstorpsgården", type="sabo"),
     ]
     db_session.add_all(units)
+    db_session.commit()  # commit så relationer kan referera säkert
 
-    # Compute hash once
-    pwd_hash = auth.get_password_hash('password123')
+    # Hash once
+    pwd_hash = auth.get_password_hash("password123")
 
-    # --- USERS (Staff + Brukare) ---
+    # --- USERS ---
     users = [
-        # Admin
-        models.User(id='admin', name='Admin User', role='admin', unit_id='u1', username='admin', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=admin'),
+        # Global Admin (ser alla units)
+        models.User(id="admin", name="Admin User", role="admin", unit_id="u1", username="admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=admin"),
+
+        # Unit Admins (ser bara kopplade units via admin_units)
+        models.User(id="ua1", name="Kronan Admin", role="unit_admin", unit_id="u1", username="kronan_admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=kronan_admin"),
+        models.User(id="ua2", name="Källstorpsgården Admin", role="unit_admin", unit_id="u2", username="kallstorp_admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=kallstorp_admin"),
 
         # Unit 1 Staff
-        models.User(id='s1', name='Emma Andersson', role='staff', unit_id='u1', username='emma', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=emma'),
-        models.User(id='s2', name='Johan Berg', role='staff', unit_id='u1', username='johan', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=johan'),
-        models.User(id='s3', name='Maria Carlsson', role='staff', unit_id='u1', username='maria', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=maria'),
-        models.User(id='s4', name='Anders Danielsson', role='staff', unit_id='u1', username='anders', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=anders'),
-        models.User(id='s10', name='Sofia Lindkvist', role='staff', unit_id='u1', username='sofia', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=sofia'),
-        models.User(id='s11', name='Lukas Ek', role='staff', unit_id='u1', username='lukas', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=lukas'),
-        models.User(id='s12', name='Elsa Holm', role='staff', unit_id='u1', username='elsa', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=elsa'),
-        models.User(id='s13', name='Nils Sjögren', role='staff', unit_id='u1', username='nils', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=nils'),
-        models.User(id='s14', name='Klara Wallin', role='staff', unit_id='u1', username='klara', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=klara'),
-        
-        # Unit 2 Staff
-        models.User(id='s5', name='Karim Al-Fayed', role='staff', unit_id='u2', username='karim', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=karim'),
-        models.User(id='s6', name='Lena Svensson', role='staff', unit_id='u2', username='lena', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=lena'),
-        models.User(id='s7', name='Olof Palme', role='staff', unit_id='u2', username='olof', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=olof'),
-        models.User(id='s15', name='Sven Bertilsson', role='staff', unit_id='u2', username='sven', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=sven'),
-        models.User(id='s16', name='Birgitta Qvist', role='staff', unit_id='u2', username='birgitta', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=birgitta'),
-        models.User(id='s17', name='Eva Dahl', role='staff', unit_id='u2', username='eva', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=eva'),
-        models.User(id='s18', name='Lars Malm', role='staff', unit_id='u2', username='lars', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=lars'),
-        models.User(id='s19', name='Monica Berg', role='staff', unit_id='u2', username='monica', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=monica'),
-        models.User(id='s20', name='Per Ström', role='staff', unit_id='u2', username='per', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=per'),
-        models.User(id='s21', name='Kerstin Falk', role='staff', unit_id='u2', username='kerstin', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=kerstin'),
+        models.User(id="s1", name="Emma Andersson", role="staff", unit_id="u1", username="emma", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=emma"),
+        models.User(id="s2", name="Johan Berg", role="staff", unit_id="u1", username="johan", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=johan"),
+        models.User(id="s3", name="Maria Carlsson", role="staff", unit_id="u1", username="maria", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=maria"),
+        models.User(id="s4", name="Anders Danielsson", role="staff", unit_id="u1", username="anders", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=anders"),
+        models.User(id="s10", name="Sofia Lindkvist", role="staff", unit_id="u1", username="sofia", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=sofia"),
+        models.User(id="s11", name="Lukas Ek", role="staff", unit_id="u1", username="lukas", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=lukas"),
+        models.User(id="s12", name="Elsa Holm", role="staff", unit_id="u1", username="elsa", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=elsa"),
+        models.User(id="s13", name="Nils Sjögren", role="staff", unit_id="u1", username="nils", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=nils"),
+        models.User(id="s14", name="Klara Wallin", role="staff", unit_id="u1", username="klara", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=klara"),
 
-        # Brukare
-        models.User(id='b1', name='Brukare nr 1', role='user', username='b1', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=b1'),
-        models.User(id='b2', name='Brukare nr 2', role='user', username='b2', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=b2'),
-        models.User(id='b3', name='Brukare nr 3', role='user', username='b3', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=b3'),
-        models.User(id='b4', name='Brukare nr 4', role='user', username='b4', hashed_password=pwd_hash, avatar='https://api.dicebear.com/7.x/avataaars/svg?seed=b4'),
+        # Unit 2 Staff
+        models.User(id="s5", name="Karim Al-Fayed", role="staff", unit_id="u2", username="karim", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=karim"),
+        models.User(id="s6", name="Lena Svensson", role="staff", unit_id="u2", username="lena", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=lena"),
+        models.User(id="s7", name="Olof Palme", role="staff", unit_id="u2", username="olof", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=olof"),
+        models.User(id="s15", name="Sven Bertilsson", role="staff", unit_id="u2", username="sven", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=sven"),
+        models.User(id="s16", name="Birgitta Qvist", role="staff", unit_id="u2", username="birgitta", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=birgitta"),
+        models.User(id="s17", name="Eva Dahl", role="staff", unit_id="u2", username="eva", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=eva"),
+        models.User(id="s18", name="Lars Malm", role="staff", unit_id="u2", username="lars", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=lars"),
+        models.User(id="s19", name="Monica Berg", role="staff", unit_id="u2", username="monica", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=monica"),
+        models.User(id="s20", name="Per Ström", role="staff", unit_id="u2", username="per", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=per"),
+        models.User(id="s21", name="Kerstin Falk", role="staff", unit_id="u2", username="kerstin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=kerstin"),
+
+        # Brukare (koppla till unit_id så filtrering funkar)
+        models.User(id="b1", name="Brukare nr 1", role="user", unit_id="u1", username="b1", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=b1"),
+        models.User(id="b2", name="Brukare nr 2", role="user", unit_id="u1", username="b2", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=b2"),
+        models.User(id="b3", name="Brukare nr 3", role="user", unit_id="u2", username="b3", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=b3"),
+        models.User(id="b4", name="Brukare nr 4", role="user", unit_id="u2", username="b4", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=b4"),
     ]
+
     db_session.add_all(users)
+    db_session.commit()
+
+    # --- Link unit_admins to their units via association table ---
+    kronan_admin = db_session.query(models.User).filter(models.User.id == "ua1").first()
+    kallstorp_admin = db_session.query(models.User).filter(models.User.id == "ua2").first()
+    u1 = db_session.query(models.Unit).filter(models.Unit.id == "u1").first()
+    u2 = db_session.query(models.Unit).filter(models.Unit.id == "u2").first()
+
+    # Koppla: ua1 -> u1, ua2 -> u2
+    kronan_admin.admin_units.append(u1)
+    kallstorp_admin.admin_units.append(u2)
+
+    db_session.commit()
 
     # --- TASK TEMPLATES ---
     # Using data from frontend/lib/demo-data.ts

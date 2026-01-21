@@ -1,20 +1,77 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Autopilot Planner – Schemasystem {Rame} (Demo)
 
-# Run and deploy your AI Studio app
+Detta är ett prototypprojekt för ett digitalt schemasystem anpassat för kommunal vård och omsorg
+(t.ex. SÄBO och LSS). Fokus ligger på:
 
-This contains everything you need to run your app locally.
+- tydlig bemanning per enhet och dag
+- strukturerade arbetsuppgifter (Brukarnära / HSL / Praktisk / Administrativ)
+- koppling mellan personal, pass, färgteam (Röd/Blå/Lila/Vit) och sida (Norr/Söder)
+- en kodstruktur som är lätt att bygga vidare på med riktig backend senare
 
-View your app in AI Studio: https://ai.studio/apps/drive/1lczCBPnM0KparSU0AnXc0OUIRWfR3IlM
+Projektet är byggt i React + TypeScript + Vite, med Tailwind CSS för UI och en tydlig mappstruktur
+för sidor, komponenter, data och kontext.
 
-## Run Locally
+## Funktioner (i prototypen just nu)
 
-**Prerequisites:**  Node.js
+- Login med roll-val
+  - Inloggningssida med val av roll: Admin, Personal, Brukare
+  - Rollen styr vilken sida man hamnar på (/admin, /staff, /user)
+- Admin – Schema & bemanning
+  - Välj enhet (t.ex. SÄBO Källstorp eller Daglig verksamhet Kronan)
+  - Se bemanning idag:
+    - personal på enheten
+    - deras pass (tider)
+    - ev. färgteam: Röd / Blå / Lila / Vit
+    - ev. sida: Norr / Söder
+  - Se dagens uppgifter per kategori:
+    - Brukarnära, HSL, Praktisk, Administrativ
+    - start- och sluttid
+    - kopplad brukare
+    - om signering krävs (HSL)
+    - om uppgiften kräver två personal
+- Demo-data (ingen riktig backend ännu)
+  - Allt data (enheter, personal, brukare, pass, uppgifter, assignment-status) ligger i
+    src/lib/demo-data.ts
+  - Struktur inspirerad av verklig verksamhet:
+    - enheter: LSS, SÄBO
+    - rum, våningsplan, Norr/Söder, färgteam
+    - uppgifter med kategorier och signeringskrav
+- Förberett för framtida backend
+  - Kod och typer (src/lib/types.tsx) är designade så att demo-data senare kan bytas ut mot
+    API-anrop / databas.
+  - React Router används för att enkelt kunna lägga på auth och skyddade routes senare.
 
+## Tech stack
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- Vite – byggverktyg & dev-server
+- React + TypeScript
+- React Router DOM – routing mellan sidor
+- Tailwind CSS – utility-baserad styling
+- lucide-react – ikoner
+- Egen Schedule-context (src/context/schedule-context.tsx) för att centralt hantera schema-data
+  längre fram
+
+## Komma igång
+
+### 1. Klona repot
+
+```bash
+git clone https://github.com/Raffi02k/rame_Plannering.git
+cd rame_Plannering
+```
+
+### 2. Backend (FastAPI)
+
+```bash
+ls -a
+source venv/bin/activate
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
+```
+
+### 3. Frontend (Vite)
+
+```bash
+npm install
+npm run dev
+```

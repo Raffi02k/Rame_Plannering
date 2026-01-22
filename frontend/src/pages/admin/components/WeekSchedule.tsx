@@ -52,13 +52,14 @@ export const WeekSchedule: React.FC<WeekScheduleProps> = ({
            />
 
            <div className="divide-y divide-gray-100 bg-white">
-             {staff.map(person => (
-               <WeekStaffRow
-                 key={person.id}
-                 person={person}
-                 weekDays={weekDays}
-                 viewType={viewType}
-                 tasks={tasks}
+              {staff.map(person => (
+                <WeekStaffRow
+                  key={person.id}
+                  person={person}
+                  staffList={staff}
+                  weekDays={weekDays}
+                  viewType={viewType}
+                  tasks={tasks}
                  activeLang={activeLang}
                  isRTL={isRTL}
                  onTaskClick={onTaskClick}

@@ -7,6 +7,7 @@ import { WeekTasksCell } from './WeekTasksCell';
 
 interface WeekStaffRowProps {
   person: Person;
+  staffList: Person[];
   weekDays: Date[];
   viewType: 'shifts' | 'tasks';
   tasks: Task[];
@@ -17,6 +18,7 @@ interface WeekStaffRowProps {
 
 export const WeekStaffRow: React.FC<WeekStaffRowProps> = ({
   person,
+  staffList,
   weekDays,
   viewType,
   tasks,
@@ -48,6 +50,7 @@ export const WeekStaffRow: React.FC<WeekStaffRowProps> = ({
           <WeekShiftCell
             key={dayIndex}
             personId={person.id}
+            staffList={staffList}
             day={day}
             activeLang={activeLang}
             isRTL={isRTL}
@@ -58,6 +61,7 @@ export const WeekStaffRow: React.FC<WeekStaffRowProps> = ({
           <WeekTasksCell
             key={dayIndex}
             personId={person.id}
+            staffList={staffList}
             day={day}
             tasks={tasks}
             activeLang={activeLang}

@@ -1,7 +1,9 @@
 
 import React from 'react';
-import { STAFF, TASKS, USERS } from '../../lib/demo-data';
+import { useAuth } from '../../context/AuthContext';
 import { TaskStatus } from '../../types';
+import { useTasks } from '../../context/TaskContext';
+import { formatLocalDate } from '../../lib/utils';
 
 // Components
 import { UserHeader } from './components/UserHeader';
@@ -10,26 +12,38 @@ import { StaffGrid } from './components/StaffGrid';
 import { UpcomingTasksList } from './components/UpcomingTasksList';
 
 export default function BrukarePage() {
-  const me = USERS[0]; // Anna
-  
+  const { user: me, staff } = useAuth();
+  const { tasks, getTaskStatus } = useTasks();
+
+  if (!me) return null;
+
+  const dateKey = formatLocalDate(new Date());
+
   // Simulate data fetching logic
-  const currentTask = TASKS.find(t => t.recipientId === me.id && t.status === TaskStatus.PENDING) || TASKS[0];
-  const nextTasks = TASKS.filter(t => t.recipientId === me.id && t.id !== currentTask.id);
-  const staffToday = STAFF.filter(s => s.id === 's1' || s.id === 's3'); // Fake logic for who is working
+  const currentTask = tasks.find(task => task.recipientId === me.id && getTaskStatus(task.id, dateKey) === TaskStatus.PENDING) || tasks.find(task => task.recipientId === me.id);
+  const nextTasks = tasks.filter(task => {
+    if (task.recipientId !== me.id) return false;
+    if (!currentTask) return true;
+    return task.id !== currentTask.id;
+  });
+
+  const staffToday = (staff ?? []).filter(
+    staffMember => staffMember.unitId === me.unitId && (staffMember.role === 'staff' || staffMember.role === 'personal')
+  );
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-10">
-      
+
       <UserHeader user={me} />
 
       <main className="max-w-3xl mx-auto p-6 space-y-8 animate-fade-in">
-        
+
         <CurrentTaskCard task={currentTask} />
 
         <StaffGrid staff={staffToday} />
 
         <UpcomingTasksList tasks={nextTasks} />
-      
+
       </main>
     </div>
   );

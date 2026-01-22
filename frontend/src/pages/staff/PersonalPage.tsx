@@ -2,7 +2,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { STAFF } from '../../lib/demo-data';
 import { cn, getShiftForDate, formatLocalDate } from '../../lib/utils';
 import { TaskStatus, Task } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -19,8 +18,9 @@ import { ContactsView } from './components/ContactsView';
 import { SbarView } from './components/SbarView';
 
 export default function PersonalPage() {
-  const { user: currentUser, logout } = useAuth();
+  const { user: currentUser, logout, staff } = useAuth();
   const { tasks, updateTask, getTaskStatus, loadDay } = useTasks();
+  const staffList = staff ?? [];
 
   // Safe guard if user is not loaded yet (should be covered by RequireAuth but good for types)
   if (!currentUser) return null;
@@ -36,24 +36,32 @@ export default function PersonalPage() {
   const location = useLocation();
   const adminUnitId = location.state?.unitId as string | undefined;
 
+  const isStaffRole = (role?: string) => role === 'staff' || role === 'personal';
+
   // Initialize viewAsUserId with current user id
   // If we have an adminUnitId, find the first staff in that unit as default? Or just keep currentUser?
   // User asked for "users... should be that unit you were on", so maybe default to first user in that unit if currentUser is not in it?
   // For now, let's just use currentUser as default, but filter correctly.
   useEffect(() => {
-    if (currentUser && !viewAsUserId) {
-      setViewAsUserId(currentUser.id);
+    if (!currentUser || viewAsUserId) return;
+
+    if (currentUser.role === 'admin') {
+      const initialStaff = staffList.find(s => isStaffRole(s.role));
+      setViewAsUserId(initialStaff?.id || currentUser.id);
+      return;
     }
-  }, [currentUser, viewAsUserId]);
+
+    setViewAsUserId(currentUser.id);
+  }, [currentUser, viewAsUserId, staffList]);
 
   // Derived effective user (who we are viewing as)
   const effectiveUser = useMemo(() => {
     if (currentUser.role === 'admin' && viewAsUserId) {
-      // Find the selected user in STAFF list to get full Person object (with unitId etc)
-      return STAFF.find(s => s.id === viewAsUserId) || currentUser;
+      // Find the selected user in staff list to get full Person object (with unitId etc)
+      return staffList.find(s => s.id === viewAsUserId) || currentUser;
     }
     return currentUser;
-  }, [currentUser, viewAsUserId]);
+  }, [currentUser, viewAsUserId, staffList]);
 
   const dateKey = formatLocalDate(currentDate);
 
@@ -65,13 +73,20 @@ export default function PersonalPage() {
 
   // Filter staff based on admin unit selection
   const visibleStaff = useMemo(() => {
-    if (!adminUnitId) return STAFF;
-    return STAFF.filter(s => s.unitId === adminUnitId);
-  }, [adminUnitId]);
+    const filtered = staffList.filter(staff => isStaffRole(staff.role));
+    if (!adminUnitId) return filtered;
+    return filtered.filter(staff => staff.unitId === adminUnitId);
+  }, [adminUnitId, staffList]);
+
+  useEffect(() => {
+    if (currentUser?.role !== 'admin' || !visibleStaff.length) return;
+    if (viewAsUserId && visibleStaff.some(s => s.id === viewAsUserId)) return;
+    setViewAsUserId(visibleStaff[0].id);
+  }, [currentUser, viewAsUserId, visibleStaff]);
 
   // --- FILTER & SORT LOGIC ---
   const dailyTasks = useMemo(() => {
-    const shift = getShiftForDate(effectiveUser.id, currentDate, activeLang);
+    const shift = getShiftForDate(effectiveUser.id, currentDate, activeLang, staffList);
     if (shift.type === 'off') return [];
 
     const filtered = tasks.filter((task) => {
@@ -142,7 +157,7 @@ export default function PersonalPage() {
   const completedCount = dailyTasks.filter(t => t.status === TaskStatus.COMPLETED || t.status === TaskStatus.SIGNED).length;
   const progress = dailyTasks.length > 0 ? Math.round((completedCount / dailyTasks.length) * 100) : 0;
 
-  const currentShift = getShiftForDate(effectiveUser.id, currentDate, activeLang);
+  const currentShift = getShiftForDate(effectiveUser.id, currentDate, activeLang, staffList);
 
   const t = {
     vikarieMode: activeLang === 'sv' ? 'Vikarieläge' : activeLang === 'en' ? 'Substitute Mode' : activeLang === 'es' ? 'Modo Suplente' : 'وضع البديل',

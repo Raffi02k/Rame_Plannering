@@ -65,14 +65,30 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
     // Validation: Only block if it's a NEW task creation.
     // If it's an existing task (task.id exists), we allow the admin to override/sign.
-    const shiftCheck = validateShiftCompatibility(formData.assigneeId, date, formData.timeStart, formData.timeEnd);
+    const shiftCheck = validateShiftCompatibility(
+      formData.assigneeId,
+      date,
+      formData.timeStart,
+      formData.timeEnd,
+      'sv',
+      staffList
+    );
     if (!shiftCheck.isValid && !task?.id) {
       setError(`Kan ej spara: ${shiftCheck.error}`);
       return;
     }
 
     // Overlap check: Strict for new tasks, bypass for existing tasks (admin override).
-    const overlapCheck = validateTaskOverlap(formData.assigneeId, date, formData.timeStart, formData.timeEnd, tasks, formData.id, 'sv');
+    const overlapCheck = validateTaskOverlap(
+      formData.assigneeId,
+      date,
+      formData.timeStart,
+      formData.timeEnd,
+      tasks,
+      formData.id,
+      'sv',
+      staffList
+    );
     if (!overlapCheck.isValid && !task?.id) {
       setError(`Krockar med annan uppgift: ${overlapCheck.error}`);
       return;

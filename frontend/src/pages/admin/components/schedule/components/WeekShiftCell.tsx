@@ -2,9 +2,11 @@
 import React from 'react';
 import { Sun, Moon, Sunrise, Coffee } from 'lucide-react';
 import { cn, getShiftForDate } from '../../../../../lib/utils';
+import { Person } from '../../../../../types';
 
 interface WeekShiftCellProps {
   personId: string;
+  staffList: Person[];
   day: Date;
   activeLang: string;
   isRTL: boolean;
@@ -14,13 +16,14 @@ interface WeekShiftCellProps {
 
 export const WeekShiftCell: React.FC<WeekShiftCellProps> = ({
   personId,
+  staffList,
   day,
   activeLang,
   isRTL,
   isWeekend,
   isToday,
 }) => {
-  const shift = getShiftForDate(personId, day, activeLang);
+  const shift = getShiftForDate(personId, day, activeLang, staffList);
   
   const getShiftIcon = (type: string) => {
     switch(type) {

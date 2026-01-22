@@ -7,6 +7,7 @@ import { TaskCard } from './TaskCard';
 
 interface StaffRowProps {
   person: Person;
+  staffList: Person[];
   tasks: Task[];
   currentDate: Date;
   activeLang: string;
@@ -24,6 +25,7 @@ interface StaffRowProps {
 
 export const StaffRow: React.FC<StaffRowProps> = ({
   person,
+  staffList,
   tasks,
   currentDate,
   activeLang,
@@ -38,7 +40,7 @@ export const StaffRow: React.FC<StaffRowProps> = ({
   endHour,
   getNormalizedHour,
 }) => {
-  const shift = getShiftForDate(person.id, currentDate, activeLang);
+  const shift = getShiftForDate(person.id, currentDate, activeLang, staffList);
 
   const personTasks = tasks.filter((task) => {
     const [sH_raw] = task.timeStart.split(':').map(Number);

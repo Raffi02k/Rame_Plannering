@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { cn, getCategoryColor, getShiftForDate, formatLocalDate } from '../../../../../lib/utils';
-import { Task } from '../../../../../types';
+import { Person, Task } from '../../../../../types';
 import { useTasks } from '../../../../../context/TaskContext';
 
 interface WeekTasksCellProps {
   personId: string;
+  staffList: Person[];
   day: Date;
   tasks: Task[];
   activeLang: string;
@@ -17,6 +18,7 @@ interface WeekTasksCellProps {
 
 export const WeekTasksCell: React.FC<WeekTasksCellProps> = ({
   personId,
+  staffList,
   day,
   tasks,
   activeLang,
@@ -26,7 +28,7 @@ export const WeekTasksCell: React.FC<WeekTasksCellProps> = ({
   onTaskClick,
 }) => {
   const { getTaskStatus } = useTasks();
-  const shift = getShiftForDate(personId, day, activeLang);
+  const shift = getShiftForDate(personId, day, activeLang, staffList);
   const dateKey = formatLocalDate(day);
 
   const dailyTasks = shift.type === 'off' ? [] : tasks.filter((task) => {

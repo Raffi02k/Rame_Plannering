@@ -1,11 +1,19 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, Text, JSON
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, Text, JSON, Table
 from sqlalchemy.orm import relationship
 from .db import Base
+
+admin_units = Table(
+    "admin_units",
+    Base.metadata,
+    Column("user_id", String, ForeignKey("users.id"), primary_key=True),
+    Column("unit_id", String, ForeignKey("units.id"), primary_key=True),
+)
 
 class Unit(Base):
     __tablename__ = "units"
     id = Column(String, primary_key=True, index=True)
     name = Column(String, index=True)
+    type = Column(String, default="unit")
 
 class User(Base):
     __tablename__ = "users"
@@ -14,10 +22,11 @@ class User(Base):
     hashed_password = Column(String)
     name = Column(String)
     avatar = Column(String, nullable=True)
-    role = Column(String) # 'admin', 'staff', 'user'
+    role = Column(String)  # 'admin', 'staff', 'user', 'unit_admin'
     unit_id = Column(String, ForeignKey("units.id"))
-
     unit = relationship("Unit")
+    # units som en unit_admin är kopplad till
+    admin_units = relationship("Unit", secondary=admin_units, backref="unit_admins")
 
 class TaskTemplate(Base):
     __tablename__ = "task_templates"

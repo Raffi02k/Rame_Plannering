@@ -62,7 +62,7 @@ export const DaySchedule: React.FC<DayScheduleProps> = ({
 
   const workingStaff = useMemo(() => {
     return staff.filter((person) => {
-      const shift = getShiftForDate(person.id, currentDate, activeLang);
+      const shift = getShiftForDate(person.id, currentDate, activeLang, staff);
       return shift.type !== 'off';
     });
   }, [staff, currentDate, activeLang]);
@@ -106,6 +106,7 @@ export const DaySchedule: React.FC<DayScheduleProps> = ({
               <StaffRow
                 key={`${person.id}-${currentDate.getTime()}`}
                 person={person}
+                staffList={staff}
                 tasks={tasks}
                 currentDate={currentDate}
                 activeLang={activeLang}

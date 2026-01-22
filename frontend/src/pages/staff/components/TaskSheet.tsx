@@ -6,7 +6,6 @@ import { cn, getCategoryColor } from '../../../lib/utils';
 import { Task, TaskCategory, TaskStatus } from '../../../types';
 import { getUITranslations } from '../../../lib/translations';
 import { useTasks } from '../../../context/TaskContext';
-import { STAFF } from '../../../lib/demo-data'; // Only for fallback/testing if needed
 import { useAuth } from '../../../context/AuthContext';
 
 interface TaskSheetProps {

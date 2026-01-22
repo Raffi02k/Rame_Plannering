@@ -25,7 +25,7 @@ export const calculateMissedTasks = (
     const isToday = d.toDateString() === now.toDateString();
 
     for (const person of staff) {
-      const shift = getShiftForDate(person.id, d, lang);
+      const shift = getShiftForDate(person.id, d, lang, staff);
       if (shift.type === 'off') continue;
 
       // Hämta alla tasks som denna person ansvarar för denna dag

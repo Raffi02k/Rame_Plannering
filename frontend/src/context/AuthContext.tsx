@@ -12,6 +12,10 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isLocalAuth: boolean;
     rawClaims: any | null;
+    units: any[];
+    staff: any[];
+    users: any[];
+    refreshLookups: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,16 +30,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [localToken, setLocalToken] = useState<string | null>(localStorage.getItem('local_token'));
     const [localUser, setLocalUser] = useState<any | null>(null);
 
-    // Load local user if token exists
+    // Lookups state
+    const [units, setUnits] = useState<any[]>([]);
+    const [staff, setStaff] = useState<any[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
+
+    // Funktion som hämtar units/staff/users från API
+    const refreshLookups = async () => {
+        // Endpointsen kräver token som backend accepterar (din /token)
+        if (!localToken) return;
+        const [units, staff, users] = await Promise.all([
+            api.getUnits(localToken),
+            api.getStaff(localToken),
+            api.getUsers(localToken),
+        ]);
+
+        setUnits(units);
+        setStaff(staff);
+        setUsers(users);
+    }
+
     useEffect(() => {
-        if (localToken && !localUser) {
+        if (!localToken) {
+            setUnits([]);
+            setStaff([]);
+            setUsers([]);
+            setLocalUser(null);
+            return;
+        }
+
+        // Hämta "me" om den inte redan finns
+        if (!localUser) {
             api.getMe(localToken)
                 .then(userData => setLocalUser(userData))
-                .catch(() => {
-                    logout();
-                });
+                .catch(() => logout());
         }
+
+        // Hämta lookups
+        refreshLookups().catch(err => {
+            console.error('Failed to load lookups', err);
+        });
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [localToken]);
+
 
     const { name, username, oid } = getUserIdentity(activeAccount);
     const primaryRole = getPrimaryRole(activeAccount);
@@ -92,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             const userData = await api.getMe(data.access_token);
             setLocalUser(userData);
+
             return userData;
         } catch (error) {
             console.error("Local login failed", error);
@@ -105,20 +144,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLocalToken(null);
         setLocalUser(null);
 
+        // Clear lookups
+        setUnits([]);
+        setStaff([]);
+        setUsers([]);
+
         // Clear MSAL if active
         if (accounts.length > 0) {
             instance.logoutRedirect();
         }
     };
 
-    const value = {
+    const value: AuthContextType = {
         token: activeAccount?.idToken || localToken,
         user,
         login,
         logout,
         isAuthenticated: isMsalAuthenticated || !!localToken,
         isLocalAuth: !!localToken && !isMsalAuthenticated,
-        rawClaims: activeAccount?.idTokenClaims || localUser
+        rawClaims: activeAccount?.idTokenClaims || localUser,
+
+        units,
+        staff,
+        users,
+        refreshLookups,
     };
 
     return (

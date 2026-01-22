@@ -2,10 +2,10 @@
 import React, { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '../../components/Button';
-import { STAFF, UNITS, USERS } from '../../lib/demo-data';
 import { translateTasks, getUITranslations } from '../../lib/translations';
 import { getShiftForDate, formatLocalDate } from '../../lib/utils';
 import { Task, TaskStatus, TaskCategory } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import { useTasks } from '../../context/TaskContext';
 
 // Logic
@@ -23,9 +23,14 @@ import { FilterBar } from './components/FilterBar';
 
 export default function AdminPage() {
   // State
-  const [currentUnitId, setCurrentUnitId] = useState(UNITS[0].id);
+  const { user: currentUser, logout, staff, units, users } = useAuth();
+  const staffList = staff ?? [];
+  const unitsList = units ?? [];
+  const usersList = users ?? [];
+  const [currentUnitId, setCurrentUnitId] = useState('');
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
+
 
   const [isTaskModalOpen, setTaskModalOpen] = useState(false);
   const [isReportModalOpen, setReportModalOpen] = useState(false);
@@ -35,7 +40,7 @@ export default function AdminPage() {
   // Load data when date/unit changes
   React.useEffect(() => {
     const dateKey = formatLocalDate(currentDate);
-    if (loadDay) {
+    if (loadDay && currentUnitId) {
       loadDay(dateKey, currentUnitId);
     }
   }, [currentDate, currentUnitId, loadDay]);
@@ -50,14 +55,18 @@ export default function AdminPage() {
   const t = getUITranslations(activeLang);
   const weekDays = useWeekDays(currentDate);
 
-  const allUnitStaff = useMemo(() => STAFF.filter(s => s.unitId === currentUnitId), [currentUnitId]);
+  const isStaffRole = (role?: string) => role === 'staff' || role === 'personal';
+  const allUnitStaff = useMemo(
+    () => staffList.filter(s => s.unitId === currentUnitId && isStaffRole(s.role)),
+    [currentUnitId, staffList]
+  );
 
   const visibleStaff = useMemo(() => {
     let list = allUnitStaff;
 
     if (activeShiftFilters.length > 0) {
       list = list.filter(person => {
-        const shift = getShiftForDate(person.id, currentDate, activeLang);
+        const shift = getShiftForDate(person.id, currentDate, activeLang, staffList);
         const isDay = activeShiftFilters.includes('day') && (shift.id === 'morning_red' || shift.id === 'morning_blue' || shift.id === 'admin_day');
         const isEve = activeShiftFilters.includes('evening') && (shift.id === 'evening_red' || shift.id === 'evening_blue');
         const isNight = activeShiftFilters.includes('night') && (shift.id === 'night_red' || shift.id === 'night_blue');
@@ -70,7 +79,7 @@ export default function AdminPage() {
     }
 
     return list;
-  }, [allUnitStaff, activeStaffFilters, activeShiftFilters, currentDate, activeLang]);
+  }, [allUnitStaff, activeStaffFilters, activeShiftFilters, currentDate, activeLang, staffList]);
 
   const filteredTasks = useMemo(() => {
     let tasks = globalTasks.filter(t => t.unitId === currentUnitId || !t.unitId);
@@ -186,10 +195,18 @@ export default function AdminPage() {
 
   const hasActiveFilters = activeFilters.length > 0 || activeStaffFilters.length > 0 || activeStaffFilters.length > 0;
 
+  React.useEffect(() => {
+    if (currentUnitId || unitsList.length === 0) return;
+    setCurrentUnitId(unitsList[0].id);
+  }, [currentUnitId, unitsList]);
+
+  const currentUnitName =
+    unitsList.find(u => u.id === currentUnitId)?.name || currentUnitId;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-900" dir={activeLang === 'ar' ? 'rtl' : 'ltr'}>
       <AdminHeader
-        units={UNITS}
+        units={unitsList}
         currentUnitId={currentUnitId}
         onUnitChange={setCurrentUnitId}
         viewMode={viewMode}
@@ -203,7 +220,7 @@ export default function AdminPage() {
       <main className="flex-1 min-w-0 flex flex-col max-w-[1800px] mx-auto w-full px-4 sm:px-6 py-6">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            {viewMode === 'day' ? t.titleDay : t.titleWeek} - {currentUnitId === 'u1' ? 'Kronan' : 'Källstorpsgården'}
+            {viewMode === 'day' ? t.titleDay : t.titleWeek} - {currentUnitName}
           </h1>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -241,7 +258,7 @@ export default function AdminPage() {
         )}
       </main>
 
-      <TaskModal isOpen={isTaskModalOpen} onClose={() => setTaskModalOpen(false)} task={currentTask} staffList={visibleStaff.length > 0 ? visibleStaff : allUnitStaff} users={USERS} onSave={saveTask} onDelete={handleDeleteTask} date={currentDate} />
+      <TaskModal isOpen={isTaskModalOpen} onClose={() => setTaskModalOpen(false)} task={currentTask} staffList={visibleStaff.length > 0 ? visibleStaff : allUnitStaff} users={usersList} onSave={saveTask} onDelete={handleDeleteTask} date={currentDate} />
       <ReportModal
         isOpen={isReportModalOpen}
         onClose={() => setReportModalOpen(false)}

@@ -2,8 +2,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Sun, Moon, Sunrise, Coffee } from 'lucide-react';
-import { ShiftRole } from "../types";
-import { STAFF } from "./demo-data";
+import { ShiftRole, Person } from "../types";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -59,13 +58,18 @@ interface ShiftInfo {
  * Calculates the exact shift ROLE for a person on a specific date.
  * ENSURES NO DUPLICATES WITHIN THE SAME UNIT ON THE SAME DAY.
  */
-export function getShiftForDate(personId: string, date: Date, lang: string = 'sv'): ShiftInfo {
-    const person = STAFF.find(s => s.id === personId);
+export function getShiftForDate(
+    personId: string,
+    date: Date,
+    lang: string = 'sv',
+    staffList: Person[] = []
+): ShiftInfo {
+    const person = staffList.find(s => s.id === personId);
     const unitId = person?.unitId || 'u1';
     const dateStr = formatLocalDate(date);
 
     // 1. Get all staff for this unit and sort them to have a stable order
-    const unitStaff = STAFF.filter(s => s.unitId === unitId).sort((a, b) => a.id.localeCompare(b.id));
+    const unitStaff = staffList.filter(s => s.unitId === unitId).sort((a, b) => a.id.localeCompare(b.id));
     const personIndex = unitStaff.findIndex(s => s.id === personId);
 
     // 2. Define all available active shift roles

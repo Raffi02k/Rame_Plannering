@@ -1,7 +1,6 @@
 
-import { Task } from '../types';
+import { Person, Task } from '../types';
 import { getShiftForDate, formatLocalDate } from './utils';
-import { STAFF } from './demo-data';
 
 export interface ValidationResult {
     isValid: boolean;
@@ -16,9 +15,10 @@ export function validateShiftCompatibility(
     date: Date,
     startTime: string,
     endTime: string,
-    lang: string = 'sv'
+    lang: string = 'sv',
+    staffList: Person[] = []
 ): ValidationResult {
-    const shift = getShiftForDate(staffId, date, lang);
+    const shift = getShiftForDate(staffId, date, lang, staffList);
 
     if (shift.type === 'off') {
         return { isValid: false, error: 'User is off duty on this day.' };
@@ -57,7 +57,7 @@ export function validateShiftCompatibility(
     // Check Yesterday's Shift (if it spilled over to today)
     const yesterday = new Date(date);
     yesterday.setDate(yesterday.getDate() - 1);
-    const prevShift = getShiftForDate(staffId, yesterday, lang);
+    const prevShift = getShiftForDate(staffId, yesterday, lang, staffList);
 
     if (prevShift.type !== 'off') {
         const [psStart, psEnd] = prevShift.time.split(' - ').map(parseTime);
@@ -77,7 +77,8 @@ export function validateTaskOverlap(
     endTime: string,
     existingTasks: Task[],
     excludeTaskId?: string,
-    lang: string = 'sv'
+    lang: string = 'sv',
+    staffList: Person[] = []
 ): ValidationResult {
     const parseTime = (t: string) => {
         if (!t) return 0;
@@ -88,7 +89,7 @@ export function validateTaskOverlap(
     const newEnd = parseTime(endTime);
 
     const dateKey = formatLocalDate(date);
-    const shift = getShiftForDate(staffId, date, lang);
+    const shift = getShiftForDate(staffId, date, lang, staffList);
 
     // Filter tasks for the same staff and date (both direct assignment and via shift role)
     const relevantTasks = existingTasks.filter(t =>

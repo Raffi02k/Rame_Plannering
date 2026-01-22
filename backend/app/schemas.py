@@ -16,7 +16,12 @@ class User(BaseModel):
     role: str
     unit_id: Optional[str] = None
     avatar: Optional[str] = None # URL to avatar image
+    class Config: from_attributes = True
 
+class Unit(BaseModel):
+    id: str
+    name: str
+    type: str
     class Config:
         from_attributes = True
 

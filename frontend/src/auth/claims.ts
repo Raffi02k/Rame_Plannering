@@ -1,5 +1,4 @@
 import { AccountInfo } from "@azure/msal-browser";
-
 /**
  * Application roles defined in Entra ID
  */
@@ -25,11 +24,18 @@ export const getPrimaryRole = (account: AccountInfo | null): AppRole | null => {
 
     const claims = account.idTokenClaims as IdTokenClaims;
     const roles = claims.roles || [];
+    const username = (claims.preferred_username || claims.email || account.username || "").toLowerCase();
+    const adminFallbackEmails = [
+        "rafmed002@trollhattan.se",
+        "raffi.medzad.aghlian1@trollhattan.se",
+    ];
 
     // Priority: Admin > Personal > Brukare
     if (roles.includes("Admin")) return "Admin";
     if (roles.includes("Personal")) return "Personal";
     if (roles.includes("Brukare")) return "Brukare";
+
+    if (adminFallbackEmails.includes(username)) return "Admin";
 
     return null;
 };

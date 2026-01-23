@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
+import { AccountInfo } from '@azure/msal-browser';
 import { loginRequest } from '../auth/msalConfig';
 import { getPrimaryRole, getUserIdentity } from '../auth/claims';
 import { api } from '../api/client';
@@ -24,7 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // MSAL (OIDC) State
     const { instance, accounts } = useMsal();
     const isMsalAuthenticated = useIsAuthenticated();
-    const activeAccount = accounts[0] || null;
+    const [msalAccount, setMsalAccount] = useState<AccountInfo | null>(null);
 
     // Local Auth State
     const [localToken, setLocalToken] = useState<string | null>(localStorage.getItem('local_token'));
@@ -51,6 +52,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     useEffect(() => {
+        if (accounts.length === 0) {
+            setMsalAccount(null);
+            return;
+        }
+
+        const account = instance.getActiveAccount() || accounts[0];
+        if (!instance.getActiveAccount()) {
+            instance.setActiveAccount(account);
+        }
+
+        setMsalAccount(account);
+    }, [instance, accounts]);
+
+    useEffect(() => {
         if (!localToken) {
             setUnits([]);
             setStaff([]);
@@ -75,13 +90,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [localToken]);
 
 
-    const { name, username, oid } = getUserIdentity(activeAccount);
-    const primaryRole = getPrimaryRole(activeAccount);
+    const { name, username, oid } = getUserIdentity(msalAccount);
+    const primaryRole = getPrimaryRole(msalAccount);
 
     // Unified User Object
     const user = useMemo(() => {
         // MSAL User Priority
-        if (activeAccount) {
+        if (msalAccount) {
             return {
                 id: oid,
                 name: name,
@@ -113,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
         }
         return null;
-    }, [activeAccount, name, username, oid, primaryRole, localUser]);
+    }, [msalAccount, name, username, oid, primaryRole, localUser]);
 
     const login = async (username?: string, password?: string) => {
         // Option A: OIDC Login
@@ -150,19 +165,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUsers([]);
 
         // Clear MSAL if active
-        if (accounts.length > 0) {
-            instance.logoutRedirect();
+        if (msalAccount) {
+            instance.setActiveAccount(null);
+            setMsalAccount(null);
+            instance.logoutRedirect({
+                account: msalAccount,
+            });
         }
     };
 
     const value: AuthContextType = {
-        token: activeAccount?.idToken || localToken,
+        token: msalAccount?.idToken || localToken,
         user,
         login,
         logout,
-        isAuthenticated: isMsalAuthenticated || !!localToken,
+        isAuthenticated: isMsalAuthenticated || !!msalAccount || !!localToken,
         isLocalAuth: !!localToken && !isMsalAuthenticated,
-        rawClaims: activeAccount?.idTokenClaims || localUser,
+        rawClaims: msalAccount?.idTokenClaims || localUser,
 
         units,
         staff,

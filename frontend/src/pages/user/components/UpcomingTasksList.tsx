@@ -1,15 +1,19 @@
 
 import React from 'react';
 import { Task } from '../../../types';
+import { getUITranslations } from '../../../lib/translations';
 
 interface UpcomingTasksListProps {
   tasks: Task[];
+  activeLang: string;
 }
 
-export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ tasks }) => {
+export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ tasks, activeLang }) => {
+  const t = getUITranslations(activeLang);
+
   return (
     <section>
-      <h2 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">Senare</h2>
+      <h2 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">{t.userLater}</h2>
       <div className="space-y-4">
         {tasks.slice(0, 3).map(task => (
           <div key={task.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-6 opacity-75 hover:opacity-100 transition-opacity">

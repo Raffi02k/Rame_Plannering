@@ -57,6 +57,8 @@ export const StaffRow: React.FC<StaffRowProps> = ({
     shift.type === 'night' ? Moon :
     Coffee;
 
+  const shiftIndicatorClass = cn("absolute top-0 bottom-0 w-1.5", shift.color);
+
   return (
     <div
       className="grid border-b border-gray-100 min-h-[140px] hover:bg-gray-50/30 group relative z-10"
@@ -64,7 +66,7 @@ export const StaffRow: React.FC<StaffRowProps> = ({
     >
       <div
         className={cn(
-          'sticky z-[110] bg-white p-4 flex flex-col justify-center shadow-[4px_0_8px_rgba(0,0,0,0.05)]',
+          'sticky z-[110] bg-white p-4 flex flex-col justify-center shadow-[4px_0_8px_rgba(0,0,0,0.05)] relative',
           isRTL ? "right-0 border-l border-l-gray-300 border-r-4" : "left-0 border-r border-r-gray-300 border-l-4",
           person.teamColor === 'red' && (isRTL ? 'border-r-red-500' : 'border-l-red-500'),
           person.teamColor === 'blue' && (isRTL ? 'border-r-blue-500' : 'border-l-blue-500'),
@@ -72,7 +74,13 @@ export const StaffRow: React.FC<StaffRowProps> = ({
           person.teamColor === 'white' && (isRTL ? 'border-r-gray-400' : 'border-l-gray-400')
         )}
       >
-        <div className="flex items-center gap-3">
+        <div
+          className={cn(
+            shiftIndicatorClass,
+            isRTL ? "right-0 rounded-l-full" : "left-0 rounded-r-full"
+          )}
+        />
+        <div className={cn("flex items-center gap-3", isRTL && "flex-row-reverse")}>
           <img src={person.avatar} alt={person.name} className="w-10 h-10 rounded-full border border-gray-100 shadow-sm" />
           <div className="flex flex-col min-w-0">
             <div className="font-bold text-gray-900 text-sm truncate leading-tight mb-0.5">

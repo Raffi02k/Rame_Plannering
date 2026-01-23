@@ -177,7 +177,7 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({
 
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1 h-16 rounded-2xl font-black text-lg" onClick={onClose}>
-              {activeLang === 'ar' ? 'إلغاء' : 'Avbryt'}
+              {t.cancel}
             </Button>
 
             {task.isReportTask ? (

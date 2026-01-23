@@ -2,18 +2,22 @@
 import React from 'react';
 import { Utensils } from 'lucide-react';
 import { Task } from '../../../types';
+import { getUITranslations } from '../../../lib/translations';
 
 interface CurrentTaskCardProps {
   task?: Task | null;
+  activeLang: string;
 }
 
-export const CurrentTaskCard: React.FC<CurrentTaskCardProps> = ({ task }) => {
+export const CurrentTaskCard: React.FC<CurrentTaskCardProps> = ({ task, activeLang }) => {
+  const t = getUITranslations(activeLang);
+
   if (!task) {
     return (
       <section>
-        <h2 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">Just nu</h2>
+        <h2 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">{t.userNow}</h2>
         <div className="bg-white rounded-3xl p-8 shadow-xl border-l-[12px] border-slate-200 flex items-center justify-center text-slate-500 font-semibold">
-          Inga uppgifter just nu
+          {t.userNoTasks}
         </div>
       </section>
     );
@@ -21,7 +25,7 @@ export const CurrentTaskCard: React.FC<CurrentTaskCardProps> = ({ task }) => {
 
   return (
     <section>
-      <h2 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">Just nu</h2>
+      <h2 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">{t.userNow}</h2>
       <div className="bg-white rounded-3xl p-8 shadow-xl border-l-[12px] border-municipal-500 flex flex-col md:flex-row gap-8 items-center md:items-start transform transition-transform hover:scale-[1.01]">
         <div className="w-32 h-32 rounded-2xl bg-municipal-100 flex items-center justify-center text-municipal-600 shrink-0">
            {/* Contextual Icon based on task - simplifying to Utensils for demo */}

@@ -50,7 +50,9 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
     report: activeLang === 'sv' ? 'Rapportera' : activeLang === 'en' ? 'Report' : activeLang === 'es' ? 'Informe' : 'تقرير',
     links: activeLang === 'sv' ? 'Länkar' : activeLang === 'en' ? 'Links' : activeLang === 'es' ? 'Enlaces' : 'روابط',
     contacts: activeLang === 'sv' ? 'Kontakt' : activeLang === 'en' ? 'Contacts' : activeLang === 'es' ? 'Contacto' : 'اتصال',
-    sbar: 'SBAR'
+    sbar: 'SBAR',
+    viewingAs: activeLang === 'sv' ? 'Visar som' : activeLang === 'en' ? 'Viewing as' : activeLang === 'es' ? 'Viendo como' : 'عرض ك',
+    logout: activeLang === 'sv' ? 'Logga ut' : activeLang === 'en' ? 'Log out' : activeLang === 'es' ? 'Cerrar sesión' : 'تسجيل الخروج'
   };
 
   return (
@@ -81,7 +83,7 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
                     <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <p className="text-municipal-300 text-[10px] uppercase font-bold tracking-wider mt-0.5">Viewing as: {user.role}</p>
+                <p className="text-municipal-300 text-[10px] uppercase font-bold tracking-wider mt-0.5">{t.viewingAs}: {user.role}</p>
               </div>
             ) : (
               <>
@@ -110,7 +112,7 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
           <button
             onClick={logout}
             className="p-2 rounded-full bg-municipal-800 hover:bg-red-500/20 hover:text-red-400 transition-all relative w-9 h-9 flex items-center justify-center border border-municipal-700"
-            title="Logga ut"
+            title={t.logout}
           >
             <LogOut size={18} />
           </button>

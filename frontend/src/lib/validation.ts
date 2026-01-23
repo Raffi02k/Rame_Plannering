@@ -7,6 +7,29 @@ export interface ValidationResult {
     error?: string;
 }
 
+const VALIDATION_TEXT = {
+    sv: {
+        offDuty: 'Användaren är ledig denna dag.',
+        outsideShift: 'Utanför passet',
+        overlap: 'Krockar med uppgift:'
+    },
+    en: {
+        offDuty: 'User is off duty on this day.',
+        outsideShift: 'Outside of shift',
+        overlap: 'Overlaps with task:'
+    },
+    es: {
+        offDuty: 'El usuario está libre este día.',
+        outsideShift: 'Fuera del turno',
+        overlap: 'Conflicta con la tarea:'
+    },
+    ar: {
+        offDuty: 'المستخدم في إجازة هذا اليوم.',
+        outsideShift: 'خارج الوردية',
+        overlap: 'يتعارض مع المهمة:'
+    }
+};
+
 /**
  * Checks if a time range fits within the user's shift.
  */
@@ -18,10 +41,11 @@ export function validateShiftCompatibility(
     lang: string = 'sv',
     staffList: Person[] = []
 ): ValidationResult {
+    const text = VALIDATION_TEXT[lang as keyof typeof VALIDATION_TEXT] || VALIDATION_TEXT.sv;
     const shift = getShiftForDate(staffId, date, lang, staffList);
 
     if (shift.type === 'off') {
-        return { isValid: false, error: 'User is off duty on this day.' };
+        return { isValid: false, error: text.offDuty };
     }
 
     const [shiftStart, shiftEnd] = shift.time.split(' - ');
@@ -67,7 +91,7 @@ export function validateShiftCompatibility(
         }
     }
 
-    return { isValid: false, error: `Outside of shift (${shift.label}: ${shift.time})` };
+    return { isValid: false, error: `${text.outsideShift} (${shift.label}: ${shift.time})` };
 }
 
 export function validateTaskOverlap(
@@ -80,6 +104,7 @@ export function validateTaskOverlap(
     lang: string = 'sv',
     staffList: Person[] = []
 ): ValidationResult {
+    const text = VALIDATION_TEXT[lang as keyof typeof VALIDATION_TEXT] || VALIDATION_TEXT.sv;
     const parseTime = (t: string) => {
         if (!t) return 0;
         const [h, m] = t.split(':').map(Number);
@@ -105,7 +130,7 @@ export function validateTaskOverlap(
 
         // Check if time ranges overlap
         if (Math.max(newStart, tStart) < Math.min(newEnd, tEnd)) {
-            return { isValid: false, error: `Overlaps with task: ${t.title} (${t.timeStart}-${t.timeEnd})` };
+            return { isValid: false, error: `${text.overlap} ${t.title} (${t.timeStart}-${t.timeEnd})` };
         }
     }
 

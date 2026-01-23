@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { X, Trash2, Save, FileText, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { cn, formatLocalDate } from '../../../lib/utils';
+import { getUITranslations } from '../../../lib/translations';
 import { Task, Person, TaskCategory, TaskStatus } from '../../../types';
 import { validateShiftCompatibility, validateTaskOverlap } from '../../../lib/validation';
 import { useTasks } from '../../../context/TaskContext';
@@ -17,6 +18,7 @@ interface TaskModalProps {
   onSave: (task: Partial<Task>) => void;
   onDelete?: (id: string) => void;
   date: Date; // For validation
+  activeLang?: string;
 }
 
 export const TaskModal: React.FC<TaskModalProps> = ({
@@ -26,12 +28,36 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   staffList,
   onSave,
   onDelete,
-  date
+  date,
+  activeLang = 'sv'
 }) => {
   if (!isOpen) return null;
 
   const { tasks } = useTasks();
   const [error, setError] = useState<string | null>(null);
+  const t = getUITranslations(activeLang);
+
+  const labels = {
+    titleNew: activeLang === 'sv' ? 'Ny uppgift' : activeLang === 'en' ? 'New task' : activeLang === 'es' ? 'Nueva tarea' : 'مهمة جديدة',
+    titleEdit: activeLang === 'sv' ? 'Hantera uppgift' : activeLang === 'en' ? 'Manage task' : activeLang === 'es' ? 'Gestionar tarea' : 'إدارة المهمة',
+    requiredError: activeLang === 'sv' ? 'Alla fält måste fyllas i.' : activeLang === 'en' ? 'All fields must be filled.' : activeLang === 'es' ? 'Todos los campos deben completarse.' : 'يجب تعبئة جميع الحقول.',
+    shiftErrorPrefix: activeLang === 'sv' ? 'Kan ej spara:' : activeLang === 'en' ? 'Cannot save:' : activeLang === 'es' ? 'No se puede guardar:' : 'لا يمكن الحفظ:',
+    overlapErrorPrefix: activeLang === 'sv' ? 'Krockar med annan uppgift:' : activeLang === 'en' ? 'Conflicts with another task:' : activeLang === 'es' ? 'Conflicta con otra tarea:' : 'يتعارض مع مهمة أخرى:',
+    titleLabel: activeLang === 'sv' ? 'Titel' : activeLang === 'en' ? 'Title' : activeLang === 'es' ? 'Título' : 'العنوان',
+    startTime: activeLang === 'sv' ? 'Starttid' : activeLang === 'en' ? 'Start time' : activeLang === 'es' ? 'Hora de inicio' : 'وقت البدء',
+    endTime: activeLang === 'sv' ? 'Sluttid' : activeLang === 'en' ? 'End time' : activeLang === 'es' ? 'Hora de fin' : 'وقت الانتهاء',
+    staffLabel: activeLang === 'sv' ? 'Personal (Flytta)' : activeLang === 'en' ? 'Staff (Move)' : activeLang === 'es' ? 'Personal (Mover)' : 'الموظفون (نقل)',
+    categoryLabel: activeLang === 'sv' ? 'Kategori' : activeLang === 'en' ? 'Category' : activeLang === 'es' ? 'Categoría' : 'الفئة',
+    statusLabel: activeLang === 'sv' ? 'Status & Signering' : activeLang === 'en' ? 'Status & Signing' : activeLang === 'es' ? 'Estado y firma' : 'الحالة والتوقيع',
+    planned: activeLang === 'sv' ? 'Planerad' : activeLang === 'en' ? 'Planned' : activeLang === 'es' ? 'Planificada' : 'مخطط',
+    completed: activeLang === 'sv' ? 'Utförd' : activeLang === 'en' ? 'Completed' : activeLang === 'es' ? 'Realizada' : 'منجزة',
+    signed: activeLang === 'sv' ? 'Signerad' : activeLang === 'en' ? 'Signed' : activeLang === 'es' ? 'Firmada' : 'موقعة',
+    missed: activeLang === 'sv' ? 'Missad' : activeLang === 'en' ? 'Missed' : activeLang === 'es' ? 'Perdida' : 'فائتة',
+    descriptionLabel: activeLang === 'sv' ? 'Beskrivning / Notering' : activeLang === 'en' ? 'Description / Notes' : activeLang === 'es' ? 'Descripción / Nota' : 'الوصف / الملاحظات',
+    descriptionPlaceholder: activeLang === 'sv' ? 'Skriv detaljer här...' : activeLang === 'en' ? 'Write details here...' : activeLang === 'es' ? 'Escriba detalles aquí...' : 'اكتب التفاصيل هنا...',
+    deleteLabel: activeLang === 'sv' ? 'Ta bort' : activeLang === 'en' ? 'Delete' : activeLang === 'es' ? 'Eliminar' : 'حذف',
+    saveLabel: activeLang === 'sv' ? 'Spara' : activeLang === 'en' ? 'Save' : activeLang === 'es' ? 'Guardar' : 'حفظ'
+  };
 
   const [formData, setFormData] = useState<Partial<Task>>(() => {
     if (!task) {
@@ -59,7 +85,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     // Allow missing assigneeId IF shiftRole is present (recurring tasks)
     const isAssigned = formData.assigneeId || formData.shiftRole;
     if (!isAssigned || !formData.timeStart || !formData.timeEnd) {
-      setError("Alla fält måste fyllas i.");
+      setError(labels.requiredError);
       return;
     }
 
@@ -70,11 +96,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       date,
       formData.timeStart,
       formData.timeEnd,
-      'sv',
+      activeLang,
       staffList
     );
     if (!shiftCheck.isValid && !task?.id) {
-      setError(`Kan ej spara: ${shiftCheck.error}`);
+      setError(`${labels.shiftErrorPrefix} ${shiftCheck.error}`);
       return;
     }
 
@@ -86,11 +112,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       formData.timeEnd,
       tasks,
       formData.id,
-      'sv',
+      activeLang,
       staffList
     );
     if (!overlapCheck.isValid && !task?.id) {
-      setError(`Krockar med annan uppgift: ${overlapCheck.error}`);
+      setError(`${labels.overlapErrorPrefix} ${overlapCheck.error}`);
       return;
     }
 
@@ -113,7 +139,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       {/* Modal Content - Centered */}
       <div className="relative bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
-          <h3 className="font-bold text-lg text-gray-900">{task?.id ? 'Hantera uppgift' : 'Ny uppgift'}</h3>
+          <h3 className="font-bold text-lg text-gray-900">{task?.id ? labels.titleEdit : labels.titleNew}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"><X size={20} /></button>
         </div>
 
@@ -127,7 +153,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         <div className="p-6 space-y-5 overflow-y-auto">
           {/* Title */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">Titel</label>
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">{labels.titleLabel}</label>
             <input
               className="w-full p-3 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-municipal-500 outline-none font-bold text-lg shadow-sm placeholder:text-gray-400"
               value={formData.title}
@@ -140,7 +166,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           {/* Time Row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">Starttid</label>
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">{labels.startTime}</label>
               <input
                 type="time"
                 className="w-full p-2.5 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-municipal-500 outline-none shadow-sm"
@@ -149,7 +175,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">Sluttid</label>
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">{labels.endTime}</label>
               <input
                 type="time"
                 className="w-full p-2.5 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-municipal-500 outline-none shadow-sm"
@@ -162,7 +188,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           {/* Assignment Row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">Personal (Flytta)</label>
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">{labels.staffLabel}</label>
               <select
                 className="w-full p-2.5 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-municipal-500 outline-none shadow-sm"
                 value={formData.assigneeId}
@@ -172,7 +198,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">Kategori</label>
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">{labels.categoryLabel}</label>
               <select
                 className="w-full p-2.5 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-municipal-500 outline-none shadow-sm"
                 value={formData.category}
@@ -185,7 +211,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
           {/* Status Buttons */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-2 tracking-wide">Status & Signering</label>
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-2 tracking-wide">{labels.statusLabel}</label>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFormData({ ...formData, status: TaskStatus.PENDING })}
@@ -196,7 +222,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                     : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
                 )}
               >
-                Planerad
+                {labels.planned}
               </button>
 
               <button
@@ -208,7 +234,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                     : "bg-white border-gray-200 text-blue-700 hover:bg-blue-50"
                 )}
               >
-                <CheckCircle2 size={14} /> Utförd
+                <CheckCircle2 size={14} /> {labels.completed}
               </button>
 
               <button
@@ -220,7 +246,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                     : "bg-white border-gray-100 text-green-700 hover:bg-green-50"
                 )}
               >
-                <FileText size={14} /> Signerad
+                <FileText size={14} /> {labels.signed}
               </button>
 
               <button
@@ -232,19 +258,19 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                     : "bg-white border-gray-200 text-red-700 hover:bg-red-50"
                 )}
               >
-                Missad
+                {labels.missed}
               </button>
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">Beskrivning / Notering</label>
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wide">{labels.descriptionLabel}</label>
             <textarea
               className="w-full p-3 border border-gray-300 bg-white text-gray-900 rounded-lg h-24 resize-none focus:ring-2 focus:ring-municipal-500 outline-none shadow-sm placeholder:text-gray-400"
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Skriv detaljer här..."
+              placeholder={labels.descriptionPlaceholder}
             />
           </div>
         </div>
@@ -257,14 +283,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 onClick={() => onDelete(formData.id!)}
                 className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg flex items-center gap-1 text-sm font-medium transition-colors"
               >
-                <Trash2 size={16} /> Ta bort
+                <Trash2 size={16} /> {labels.deleteLabel}
               </button>
             )}
           </div>
           <div className="flex gap-3">
-            <Button variant="ghost" onClick={onClose}>Avbryt</Button>
+            <Button variant="ghost" onClick={onClose}>{t.cancel}</Button>
             <Button onClick={handleSave} className="gap-2 shadow-lg shadow-municipal-500/20">
-              <Save size={16} /> Spara
+              <Save size={16} /> {labels.saveLabel}
             </Button>
           </div>
         </div>

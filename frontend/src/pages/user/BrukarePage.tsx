@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { TaskStatus } from '../../types';
 import { useTasks } from '../../context/TaskContext';
@@ -14,6 +14,7 @@ import { UpcomingTasksList } from './components/UpcomingTasksList';
 export default function BrukarePage() {
   const { user: me, staff } = useAuth();
   const { tasks, getTaskStatus } = useTasks();
+  const [activeLang, setActiveLang] = useState('sv');
 
   if (!me) return null;
 
@@ -32,17 +33,17 @@ export default function BrukarePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-10">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-10" dir={activeLang === 'ar' ? 'rtl' : 'ltr'}>
 
-      <UserHeader user={me} />
+      <UserHeader user={me} activeLang={activeLang} onLangChange={setActiveLang} />
 
       <main className="max-w-3xl mx-auto p-6 space-y-8 animate-fade-in">
 
-        <CurrentTaskCard task={currentTask} />
+        <CurrentTaskCard task={currentTask} activeLang={activeLang} />
 
-        <StaffGrid staff={staffToday} />
+        <StaffGrid staff={staffToday} activeLang={activeLang} />
 
-        <UpcomingTasksList tasks={nextTasks} />
+        <UpcomingTasksList tasks={nextTasks} activeLang={activeLang} />
 
       </main>
     </div>

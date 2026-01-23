@@ -2,15 +2,19 @@
 import React from 'react';
 import { cn } from '../../../lib/utils';
 import { Person } from '../../../types';
+import { getUITranslations } from '../../../lib/translations';
 
 interface StaffGridProps {
   staff: Person[];
+  activeLang: string;
 }
 
-export const StaffGrid: React.FC<StaffGridProps> = ({ staff }) => {
+export const StaffGrid: React.FC<StaffGridProps> = ({ staff, activeLang }) => {
+  const t = getUITranslations(activeLang);
+
   return (
     <section>
-      <h2 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">Personal idag</h2>
+      <h2 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">{t.userStaffToday}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {staff.map(person => (
           <div key={person.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center">

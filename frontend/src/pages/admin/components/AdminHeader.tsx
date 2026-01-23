@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Settings, MapPin, ChevronLeft, ChevronRight, Calendar, Languages, RotateCcw } from 'lucide-react';
 import { cn, getWeekNumber } from '../../../lib/utils';
+import { getUITranslations } from '../../../lib/translations';
 import { Unit } from '../../../types';
 import { Button } from '../../../components/Button';
 import { useAuth } from '../../../context/AuthContext';
@@ -33,6 +34,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   onNavigate
 }) => {
   const { logout } = useAuth();
+  const ui = getUITranslations(activeLang);
 
   const isRTL = activeLang === 'ar';
   const isToday = new Date().toDateString() === currentDate.toDateString();
@@ -54,7 +56,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   };
 
   const t = {
-    today: activeLang === 'sv' ? 'Idag' : activeLang === 'en' ? 'Today' : activeLang === 'es' ? 'Hoy' : 'اليوم'
+    today: ui.date
   };
 
   return (
@@ -66,7 +68,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <button
             onClick={logout}
             className="text-xl font-bold text-municipal-900 flex items-center gap-2 hover:opacity-80 transition-opacity outline-none"
-            title="Logga ut"
+            title={ui.logout}
           >
             <div className="w-8 h-8 bg-municipal-900 rounded-lg flex items-center justify-center text-white shadow-lg shadow-municipal-900/20">
               <LogOut size={16} />
@@ -168,10 +170,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               state={{ unitId: currentUnitId }}
               className="text-xs font-medium text-gray-500 hover:text-municipal-600 transition-colors hidden sm:block"
             >
-              Staff View
+              {ui.staffView}
             </Link>
             <Link to="/user" className="text-xs font-medium text-gray-500 hover:text-municipal-600 transition-colors hidden sm:block">
-              User View
+              {ui.userView}
             </Link>
             <div className="h-9 w-9 rounded-full bg-municipal-900 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white cursor-pointer hover:bg-municipal-800 transition-colors">
               AD

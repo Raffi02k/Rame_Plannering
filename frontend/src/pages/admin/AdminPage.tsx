@@ -123,6 +123,12 @@ export default function AdminPage() {
     if (activeLang === 'sv') {
       return `${missedTasks.length} ${missedTasks.length === 1 ? 'uppgift' : 'uppgifter'} registrerades ej som klara under den valda perioden.`;
     }
+    if (activeLang === 'es') {
+      return `${missedTasks.length} ${missedTasks.length === 1 ? 'tarea' : 'tareas'} no se registraron como completadas durante el período seleccionado.`;
+    }
+    if (activeLang === 'ar') {
+      return `${missedTasks.length} ${missedTasks.length === 1 ? 'مهمة' : 'مهام'} لم يتم تسجيلها كمكتملة خلال الفترة المحددة.`;
+    }
     return `${missedTasks.length} ${missedTasks.length === 1 ? 'task was' : 'tasks were'} not registered as completed during the selected period.`;
   }, [missedTasks, activeLang]);
 
@@ -258,7 +264,17 @@ export default function AdminPage() {
         )}
       </main>
 
-      <TaskModal isOpen={isTaskModalOpen} onClose={() => setTaskModalOpen(false)} task={currentTask} staffList={visibleStaff.length > 0 ? visibleStaff : allUnitStaff} users={usersList} onSave={saveTask} onDelete={handleDeleteTask} date={currentDate} />
+      <TaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setTaskModalOpen(false)}
+        task={currentTask}
+        staffList={visibleStaff.length > 0 ? visibleStaff : allUnitStaff}
+        users={usersList}
+        onSave={saveTask}
+        onDelete={handleDeleteTask}
+        date={currentDate}
+        activeLang={activeLang}
+      />
       <ReportModal
         isOpen={isReportModalOpen}
         onClose={() => setReportModalOpen(false)}

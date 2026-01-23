@@ -12,10 +12,26 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 
-root.render(
-    <React.StrictMode>
-        <MsalProvider instance={msalInstance}>
-            <App />
-        </MsalProvider>
-    </React.StrictMode>
-);
+const bootstrap = async () => {
+    try {
+        await msalInstance.initialize();
+        const response = await msalInstance.handleRedirectPromise();
+        console.info("MSAL redirect response", response);
+        if (response?.account) {
+            msalInstance.setActiveAccount(response.account);
+        }
+    } catch (error) {
+        console.error("MSAL redirect error", error);
+    } finally {
+        console.info("MSAL accounts", msalInstance.getAllAccounts());
+        root.render(
+            <React.StrictMode>
+                <MsalProvider instance={msalInstance}>
+                    <App />
+                </MsalProvider>
+            </React.StrictMode>
+        );
+    }
+};
+
+bootstrap();

@@ -116,19 +116,19 @@ export function getShiftForDate(
         },
         'morning_red': {
             id: 'morning_red', type: 'day', label: t('Dag (Röd)', 'Day (Red)', 'نهار (أحمر)', 'Día (Rojo)'),
-            color: 'bg-red-50 text-red-900 border-red-200', time: '07:00 - 16:00'
+            color: 'bg-rose-100 text-rose-900 border-rose-300', time: '07:00 - 16:00'
         },
         'morning_blue': {
             id: 'morning_blue', type: 'day', label: t('Dag (Blå)', 'Day (Blue)', 'نهار (أزرق)', 'Día (Azul)'),
-            color: 'bg-blue-50 text-blue-900 border-blue-200', time: '07:00 - 16:00'
+            color: 'bg-sky-100 text-sky-900 border-sky-300', time: '07:00 - 16:00'
         },
         'evening_red': {
             id: 'evening_red', type: 'eve', label: t('Kväll (Röd)', 'Evening (Red)', 'مساء (أحمر)', 'Tarde (Rojo)'),
-            color: 'bg-orange-50 text-orange-900 border-orange-200', time: '13:30 - 21:00'
+            color: 'bg-red-100 text-red-900 border-red-300', time: '13:30 - 21:00'
         },
         'evening_blue': {
             id: 'evening_blue', type: 'eve', label: t('Kväll (Blå)', 'Evening (Blue)', 'مساء (أزرق)', 'Tarde (Azul)'),
-            color: 'bg-indigo-50 text-indigo-900 border-indigo-200', time: '13:00 - 21:00'
+            color: 'bg-blue-100 text-blue-900 border-blue-300', time: '13:00 - 21:00'
         },
         'night_red': {
             id: 'night_red', type: 'night', label: t('Natt (Röd)', 'Night (Red)', 'ليل (أحمر)', 'Noche (Rojo)'),

@@ -164,7 +164,8 @@ export default function PersonalPage() {
     shift: activeLang === 'sv' ? 'Pass' : activeLang === 'en' ? 'Shift' : activeLang === 'es' ? 'Turno' : 'وردية',
     noTasks: activeLang === 'sv' ? 'Inga uppgifter planerade för denna dag.' : activeLang === 'en' ? 'No tasks planned for this day.' : activeLang === 'es' ? 'No hay tareas planificadas för hoy.' : 'لا توجد مهام مخططة لهذا اليوم.',
     youAreOff: activeLang === 'sv' ? 'Du är ledig!' : activeLang === 'en' ? 'You are off!' : activeLang === 'es' ? '¡Estás libre!' : 'أنت في عطلة!',
-    logout: activeLang === 'sv' ? 'Logga ut' : activeLang === 'en' ? 'Log out' : activeLang === 'es' ? 'Cerrar sesión' : 'تسجيل الخروج'
+    logout: activeLang === 'sv' ? 'Logga ut' : activeLang === 'en' ? 'Log out' : activeLang === 'es' ? 'Cerrar sesión' : 'تسجيل الخروج',
+    adminDashboard: activeLang === 'sv' ? 'Adminpanel' : activeLang === 'en' ? 'Admin Dashboard' : activeLang === 'es' ? 'Panel Admin' : 'لوحة الإدارة'
   };
 
   return (
@@ -241,7 +242,7 @@ export default function PersonalPage() {
         {currentUser.role === 'admin' ? (
           <Link to="/admin" className="p-2 text-municipal-600 hover:text-municipal-800 flex flex-col items-center w-full">
             <ChevronLeft size={20} className={activeLang === 'ar' ? 'rotate-180' : ''} />
-            <span className="text-[10px] font-bold">Admin Dashboard</span>
+            <span className="text-[10px] font-bold">{t.adminDashboard}</span>
           </Link>
         ) : (
           <button onClick={logout} className="p-2 text-gray-400 hover:text-municipal-600 flex flex-col items-center w-full">

@@ -13,6 +13,7 @@ export const msalConfig: Configuration = {
         authority: `https://login.microsoftonline.com/${tenantId}`,
         redirectUri: window.location.origin,
         postLogoutRedirectUri: window.location.origin,
+        navigateToLoginRequestUrl: false,
     },
     cache: {
         // sessionStorage is recommended for SPAs to prevent session leakage between tabs
@@ -49,6 +50,7 @@ export const msalConfig: Configuration = {
  */
 export const loginRequest = {
     scopes: ["openid", "profile", "User.Read"],
+    prompt: "login",
 };
 
 // Initialize the MSAL instance

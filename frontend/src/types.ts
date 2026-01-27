@@ -20,7 +20,19 @@ export enum TaskStatus {
   SIGNED = 'signed',
 }
 
-export type ShiftRole = 'morning_red' | 'morning_blue' | 'evening_red' | 'evening_blue' | 'night_red' | 'night_blue' | 'admin_day' | 'off';
+export type ShiftRole =
+  | 'morning_red'
+  | 'morning_blue'
+  | 'evening_red'
+  | 'evening_blue'
+  | 'night_red'
+  | 'night_blue'
+  | 'admin_day'
+  | 'dev_alpha'
+  | 'dev_beta'
+  | 'dev_gamma'
+  | 'dev_delta'
+  | 'off';
 
 export interface Person {
   id: string;

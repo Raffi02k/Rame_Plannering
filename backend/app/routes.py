@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+import json
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
@@ -131,6 +132,13 @@ def get_day_schedule(
     for t in templates:
         inst = instance_map.get(t.id)
         status = inst.status if inst else "pending"
+
+        meta = t.meta_data or {}
+        if isinstance(meta, str):
+            try:
+                meta = json.loads(meta)
+            except json.JSONDecodeError:
+                meta = {}
         
         # Map DB model to API Schema
         tasks_data.append({
@@ -144,8 +152,8 @@ def get_day_schedule(
             "roleType": t.role_type,
             "isShared": t.is_shared,
             "validOnDate": t.valid_on_date,
-            "meta": t.meta_data or {},
-            "assigneeId": t.meta_data.get('assigneeId') if t.meta_data else None,
+            "meta": meta,
+            "assigneeId": meta.get('assigneeId') if isinstance(meta, dict) else None,
             "reportData": inst.report_data if inst else None
         })
         

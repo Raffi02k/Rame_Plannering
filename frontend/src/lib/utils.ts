@@ -73,11 +73,13 @@ export function getShiftForDate(
     const personIndex = unitStaff.findIndex(s => s.id === personId);
 
     // 2. Define all available active shift roles
-    const activeRoles: ShiftRole[] = [
-        'morning_red', 'morning_blue',
-        'evening_red', 'evening_blue',
-        'night_red', 'night_blue'
-    ];
+    const activeRoles: ShiftRole[] = unitId === 'u3'
+        ? ['dev_alpha', 'dev_beta', 'dev_gamma', 'dev_delta']
+        : [
+            'morning_red', 'morning_blue',
+            'evening_red', 'evening_blue',
+            'night_red', 'night_blue'
+        ];
 
     // 3. Create a pool of shifts: Active roles + enough "off" to cover everyone
     let shiftPool: ShiftRole[] = [...activeRoles];
@@ -140,6 +142,22 @@ export function getShiftForDate(
         },
         'admin_day': {
             id: 'admin_day', type: 'day', label: 'Admin', color: 'bg-gray-800 text-white', time: '08:00 - 17:00'
+        },
+        'dev_alpha': {
+            id: 'dev_alpha', type: 'day', label: t('Utveckling A', 'Development A', 'تطوير أ', 'Desarrollo A'),
+            color: 'bg-emerald-100 text-emerald-900 border-emerald-300', time: '08:00 - 17:00'
+        },
+        'dev_beta': {
+            id: 'dev_beta', type: 'day', label: t('Utveckling B', 'Development B', 'تطوير ب', 'Desarrollo B'),
+            color: 'bg-teal-100 text-teal-900 border-teal-300', time: '08:00 - 17:00'
+        },
+        'dev_gamma': {
+            id: 'dev_gamma', type: 'day', label: t('Utveckling C', 'Development C', 'تطوير ج', 'Desarrollo C'),
+            color: 'bg-amber-100 text-amber-900 border-amber-300', time: '08:00 - 17:00'
+        },
+        'dev_delta': {
+            id: 'dev_delta', type: 'day', label: t('Utveckling D', 'Development D', 'تطوير د', 'Desarrollo D'),
+            color: 'bg-violet-100 text-violet-900 border-violet-300', time: '08:00 - 17:00'
         }
     };
 

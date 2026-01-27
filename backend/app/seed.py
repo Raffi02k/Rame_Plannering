@@ -15,6 +15,7 @@ def seed_data():
     units = [
         models.Unit(id="u1", name="Daglig verksamhet Kronan", type="lss"),
         models.Unit(id="u2", name="SÄBO Källstorpsgården", type="sabo"),
+        models.Unit(id="u3", name="Utvecklingsverksamheten", type="lss"),
     ]
     db_session.add_all(units)
     db_session.commit()  # commit så relationer kan referera säkert
@@ -26,6 +27,7 @@ def seed_data():
     users = [
         # Global Admin (ser alla units)
         models.User(id="admin", name="Admin User", role="admin", unit_id="u1", username="admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=admin"),
+        models.User(id="oidc-raffi", name="Raffi Medzad Aghlian", role="admin", unit_id="u3", username="rafmed002@trollhattan.se", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=raffi"),
 
         # Unit Admins (ser bara kopplade units via admin_units)
         models.User(id="ua1", name="Kronan Admin", role="unit_admin", unit_id="u1", username="kronan_admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=kronan_admin"),
@@ -496,6 +498,35 @@ def seed_data():
             substitute_instructions='Använd 2 mått kaffe per liter vatten. Brygg 3 fulla kannor.', 
             category='Service', role_type='night_blue', is_shared=False, 
             meta_data={'timeStart': '06:15', 'timeEnd': '06:45'}
+        ),
+
+        # ===========================================================================
+        # UNIT 3: UTVECKLINGSVERKSAMHETEN
+        # ===========================================================================
+
+        models.TaskTemplate(
+            id='u3-dev-a', unit_id='u3', title='Kodgranskning', description='Granska pull requests och ge feedback.',
+            substitute_instructions='Fokusera på säkerhet och läsbarhet.',
+            category='Admin', role_type='dev_alpha', is_shared=False,
+            meta_data={'timeStart': '08:15', 'timeEnd': '10:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-dev-b', unit_id='u3', title='Sprintplanering', description='Planera nästa sprint och prioritera backlog.',
+            substitute_instructions='Uppdatera Jira och markera uppskattningar.',
+            category='Admin', role_type='dev_beta', is_shared=False,
+            meta_data={'timeStart': '10:15', 'timeEnd': '12:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-dev-c', unit_id='u3', title='Teknisk felsökning', description='Felsök inrapporterade buggar i utvecklingsmiljö.',
+            substitute_instructions='Dokumentera rotorsak i loggboken.',
+            category='Service', role_type='dev_gamma', is_shared=False,
+            meta_data={'timeStart': '13:00', 'timeEnd': '14:30'}
+        ),
+        models.TaskTemplate(
+            id='u3-dev-d', unit_id='u3', title='Teams-möte', description='Daglig avstämning i Teams.',
+            substitute_instructions='Skriv kort status i chatten efter mötet.',
+            category='Social', role_type='dev_delta', is_shared=False,
+            meta_data={'timeStart': '15:00', 'timeEnd': '16:30'}
         ),
     ]
     db_session.add_all(tasks)

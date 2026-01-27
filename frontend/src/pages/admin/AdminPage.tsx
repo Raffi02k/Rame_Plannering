@@ -31,6 +31,10 @@ export default function AdminPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
 
+  const dayShiftIds = ['morning_red', 'morning_blue', 'admin_day', 'dev_alpha', 'dev_beta', 'dev_gamma', 'dev_delta'];
+  const eveningShiftIds = ['evening_red', 'evening_blue'];
+  const nightShiftIds = ['night_red', 'night_blue'];
+
 
   const [isTaskModalOpen, setTaskModalOpen] = useState(false);
   const [isReportModalOpen, setReportModalOpen] = useState(false);
@@ -67,9 +71,9 @@ export default function AdminPage() {
     if (activeShiftFilters.length > 0) {
       list = list.filter(person => {
         const shift = getShiftForDate(person.id, currentDate, activeLang, staffList);
-        const isDay = activeShiftFilters.includes('day') && (shift.id === 'morning_red' || shift.id === 'morning_blue' || shift.id === 'admin_day');
-        const isEve = activeShiftFilters.includes('evening') && (shift.id === 'evening_red' || shift.id === 'evening_blue');
-        const isNight = activeShiftFilters.includes('night') && (shift.id === 'night_red' || shift.id === 'night_blue');
+        const isDay = activeShiftFilters.includes('day') && dayShiftIds.includes(shift.id);
+        const isEve = activeShiftFilters.includes('evening') && eveningShiftIds.includes(shift.id);
+        const isNight = activeShiftFilters.includes('night') && nightShiftIds.includes(shift.id);
         return isDay || isEve || isNight;
       });
     }
@@ -91,9 +95,9 @@ export default function AdminPage() {
     if (activeShiftFilters.length > 0) {
       tasks = tasks.filter(task => {
         if (!task.shiftRole) return false;
-        const isDay = activeShiftFilters.includes('day') && (task.shiftRole === 'morning_red' || task.shiftRole === 'morning_blue' || task.shiftRole === 'admin_day');
-        const isEve = activeShiftFilters.includes('evening') && (task.shiftRole === 'evening_red' || task.shiftRole === 'evening_blue');
-        const isNight = activeShiftFilters.includes('night') && (task.shiftRole === 'night_red' || task.shiftRole === 'night_blue');
+        const isDay = activeShiftFilters.includes('day') && dayShiftIds.includes(task.shiftRole);
+        const isEve = activeShiftFilters.includes('evening') && eveningShiftIds.includes(task.shiftRole);
+        const isNight = activeShiftFilters.includes('night') && nightShiftIds.includes(task.shiftRole);
         return isDay || isEve || isNight;
       });
     }

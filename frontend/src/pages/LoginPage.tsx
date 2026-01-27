@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
-import { LogIn, User as UserIcon, Building2, Fingerprint, Lock, AlertCircle } from "lucide-react";
+import { User as UserIcon, Building2, Fingerprint, Lock, AlertCircle } from "lucide-react";
 
 export const LoginPage = () => {
     const { login, isAuthenticated, user } = useAuth();
@@ -63,7 +63,14 @@ export const LoginPage = () => {
                         onClick={handleMsalLogin}
                         className="group flex items-center justify-center gap-3 w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-4 px-8 rounded-2xl font-black text-lg shadow-xl shadow-blue-900/20 hover:shadow-blue-500/30 active:scale-[0.98] transition-all ring-4 ring-blue-500/10"
                     >
-                        <LogIn className="w-6 h-6 transition-transform group-hover:translate-x-1" />
+                        <span className="inline-flex items-center justify-center w-6 h-6 transition-transform group-hover:translate-x-1">
+                            <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden="true">
+                                <rect x="1" y="1" width="10" height="10" fill="#F25022" />
+                                <rect x="13" y="1" width="10" height="10" fill="#7FBA00" />
+                                <rect x="1" y="13" width="10" height="10" fill="#00A4EF" />
+                                <rect x="13" y="13" width="10" height="10" fill="#FFB900" />
+                            </svg>
+                        </span>
                         Logga in med Microsoft
                     </button>
 

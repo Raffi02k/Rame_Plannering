@@ -256,7 +256,11 @@ const TITLE_MAP: Record<string, Record<string, string>> = {
   'Förrådspåfyllning': { sv: 'Förrådspåfyllning', en: 'Stock Refill', ar: 'تعبئة المستودع', es: 'Reposición Stock' },
   'Säkerhetscheck': { sv: 'Säkerhetscheck', en: 'Security Check', ar: 'فحص أمني', es: 'Control Seguridad' },
   'Kaffebryggning': { sv: 'Kaffebryggning', en: 'Brewing Coffee', ar: 'تحضير القهوة', es: 'Preparar Café' },
-  'Säkerhetsrond': { sv: 'Säkerhetsrond', en: 'Safety Round', ar: 'جولة أمان', es: 'Ronda de Seguridad' }
+  'Säkerhetsrond': { sv: 'Säkerhetsrond', en: 'Safety Round', ar: 'جولة أمان', es: 'Ronda de Seguridad' },
+  'Kodgranskning': { sv: 'Kodgranskning', en: 'Code Review', ar: 'مراجعة الكود', es: 'Revisión de código' },
+  'Sprintplanering': { sv: 'Sprintplanering', en: 'Sprint Planning', ar: 'تخطيط السبرنت', es: 'Planificación de sprint' },
+  'Teknisk felsökning': { sv: 'Teknisk felsökning', en: 'Technical Troubleshooting', ar: 'استكشاف الأخطاء التقنية', es: 'Solución técnica de problemas' },
+  'Teams-möte': { sv: 'Teams-möte', en: 'Teams Meeting', ar: 'اجتماع Teams', es: 'Reunión de Teams' }
 };
 
 const DESCRIPTION_MAP: Record<string, Record<string, string>> = {
@@ -277,7 +281,31 @@ const DESCRIPTION_MAP: Record<string, Record<string, string>> = {
   'Tömma inkontinensavfall.': { sv: 'Tömma inkontinensavfall.', en: 'Empty incontinence waste.', ar: 'تفريغ نفايات السلس.', es: 'Vaciar residuos incontinencia.' },
   'Överlämning till dag.': { sv: 'Överlämning till dag.', en: 'Handover to day shift.', ar: 'التسليم للصباح.', es: 'Entrega a la mañana.' },
   'Töm diskmaskin i pentryt.': { sv: 'Töm diskmaskin i pentryt.', en: 'Empty dishwasher in pantry.', ar: 'تفريغ غسالة الصحون.', es: 'Vaciar lavavajillas despensa.' },
-  'Förbered frukostkaffe.': { sv: 'Förbered frukostkaffe.', en: 'Prepare breakfast coffee.', ar: 'تحضير قهوة الإفطار.', es: 'Preparar café desayuno.' }
+  'Förbered frukostkaffe.': { sv: 'Förbered frukostkaffe.', en: 'Prepare breakfast coffee.', ar: 'تحضير قهوة الإفطار.', es: 'Preparar café desayuno.' },
+  'Granska pull requests och ge feedback.': {
+    sv: 'Granska pull requests och ge feedback.',
+    en: 'Review pull requests and give feedback.',
+    ar: 'راجع طلبات الدمج وقدم ملاحظات.',
+    es: 'Revisar pull requests y dar feedback.'
+  },
+  'Planera nästa sprint och prioritera backlog.': {
+    sv: 'Planera nästa sprint och prioritera backlog.',
+    en: 'Plan the next sprint and prioritize the backlog.',
+    ar: 'خطط للسبرنت القادم وحدد أولويات قائمة المهام.',
+    es: 'Planificar el próximo sprint y priorizar el backlog.'
+  },
+  'Felsök inrapporterade buggar i utvecklingsmiljö.': {
+    sv: 'Felsök inrapporterade buggar i utvecklingsmiljö.',
+    en: 'Troubleshoot reported bugs in the development environment.',
+    ar: 'استكشف الأخطاء المبلغ عنها في بيئة التطوير.',
+    es: 'Solucionar bugs reportados en el entorno de desarrollo.'
+  },
+  'Daglig avstämning i Teams.': {
+    sv: 'Daglig avstämning i Teams.',
+    en: 'Daily check-in in Teams.',
+    ar: 'اجتماع متابعة يومي في Teams.',
+    es: 'Reunión diaria de seguimiento en Teams.'
+  }
 };
 
 const SUB_INSTR_MAP: Record<string, Record<string, string>> = {
@@ -316,6 +344,30 @@ const SUB_INSTR_MAP: Record<string, Record<string, string>> = {
     en: 'Enter quietly, do not turn on ceiling light. Use flashlight if needed.',
     ar: 'ادخل بهدوء، لا تشعل ضوء السقف. استخدم مصباحاً يدوياً عند الضرورة.',
     es: 'Entre en silencio, no encienda la luz del techo. Use linterna si es necesario.'
+  },
+  'Fokusera på säkerhet och läsbarhet.': {
+    sv: 'Fokusera på säkerhet och läsbarhet.',
+    en: 'Focus on security and readability.',
+    ar: 'ركز على الأمان وسهولة القراءة.',
+    es: 'Enfócate en seguridad y legibilidad.'
+  },
+  'Uppdatera Jira och markera uppskattningar.': {
+    sv: 'Uppdatera Jira och markera uppskattningar.',
+    en: 'Update Jira and mark estimates.',
+    ar: 'حدّث Jira وسجّل التقديرات.',
+    es: 'Actualizar Jira y marcar estimaciones.'
+  },
+  'Dokumentera rotorsak i loggboken.': {
+    sv: 'Dokumentera rotorsak i loggboken.',
+    en: 'Document the root cause in the log.',
+    ar: 'وثق السبب الجذري في السجل.',
+    es: 'Documentar la causa raíz en el registro.'
+  },
+  'Skriv kort status i chatten efter mötet.': {
+    sv: 'Skriv kort status i chatten efter mötet.',
+    en: 'Post a short status in the chat after the meeting.',
+    ar: 'اكتب تحديثا قصيرا في الدردشة بعد الاجتماع.',
+    es: 'Publica un estado breve en el chat después de la reunión.'
   }
 };
 

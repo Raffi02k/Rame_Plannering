@@ -22,6 +22,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const oidcOverrides: Record<string, { role: string; roleLabel: string; unitId?: string }> = {
+        "rafmed002@trollhattan.se": { role: "admin", roleLabel: "Admin", unitId: "u3" },
+    };
     // MSAL (OIDC) State
     const { instance, accounts } = useMsal();
     const isMsalAuthenticated = useIsAuthenticated();
@@ -36,14 +39,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [staff, setStaff] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
 
+    const apiToken = localToken || msalAccount?.idToken || null;
+
     // Funktion som hämtar units/staff/users från API
     const refreshLookups = async () => {
-        // Endpointsen kräver token som backend accepterar (din /token)
-        if (!localToken) return;
+        if (!apiToken) return;
         const [units, staff, users] = await Promise.all([
-            api.getUnits(localToken),
-            api.getStaff(localToken),
-            api.getUsers(localToken),
+            api.getUnits(apiToken),
+            api.getStaff(apiToken),
+            api.getUsers(apiToken),
         ]);
 
         setUnits(units);
@@ -66,16 +70,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [instance, accounts]);
 
     useEffect(() => {
-        if (!localToken) {
+        if (!apiToken) {
             setUnits([]);
             setStaff([]);
             setUsers([]);
-            setLocalUser(null);
+            if (localToken) {
+                setLocalUser(null);
+            }
             return;
         }
 
-        // Hämta "me" om den inte redan finns
-        if (!localUser) {
+        // Hämta "me" om den inte redan finns (endast local auth)
+        if (localToken && !localUser) {
             api.getMe(localToken)
                 .then(userData => setLocalUser(userData))
                 .catch(() => logout());
@@ -87,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [localToken]);
+    }, [apiToken, localToken]);
 
 
     const { name, username, oid } = getUserIdentity(msalAccount);
@@ -97,13 +103,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const user = useMemo(() => {
         // MSAL User Priority
         if (msalAccount) {
+            const oidcOverride = username ? oidcOverrides[username.toLowerCase()] : undefined;
+            const role = oidcOverride?.role || primaryRole?.toLowerCase() || 'personal';
+            const roleLabel = oidcOverride?.roleLabel || primaryRole || 'Personal';
             return {
                 id: oid,
                 name: name,
                 username: username,
-                role: primaryRole?.toLowerCase() || 'personal',
-                roleLabel: primaryRole || 'Personal',
-                unitId: 'u1',
+                role: role,
+                roleLabel: roleLabel,
+                unitId: oidcOverride?.unitId || 'u1',
                 authMethod: 'oidc'
             };
         }

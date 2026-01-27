@@ -50,7 +50,7 @@ export const msalConfig: Configuration = {
  */
 export const loginRequest = {
     scopes: ["openid", "profile", "User.Read"],
-    prompt: "login",
+    prompt: "select_account",
 };
 
 // Initialize the MSAL instance

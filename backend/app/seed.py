@@ -28,6 +28,7 @@ def seed_data():
         # Global Admin (ser alla units)
         models.User(id="admin", name="Admin User", role="admin", unit_id="u1", username="admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=admin"),
         models.User(id="oidc-raffi", name="Raffi Medzad Aghlian", role="admin", unit_id="u3", username="rafmed002@trollhattan.se", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=raffi"),
+        models.User(id="oidc-jajn", name="Johanna Nyman", role="staff", unit_id="u3", username="jajn@trollhattan.se", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=jajn"),
 
         # Unit Admins (ser bara kopplade units via admin_units)
         models.User(id="ua1", name="Kronan Admin", role="unit_admin", unit_id="u1", username="kronan_admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=kronan_admin"),

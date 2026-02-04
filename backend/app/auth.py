@@ -27,6 +27,11 @@ OIDC_USER_OVERRIDES = {
         "unit_id": "u3",
         "name": "Raffi Medzad Aghlian",
     },
+    "jajn@trollhattan.se": {
+        "role": "staff",
+        "unit_id": "u3",
+        "name": "Johanna Nyman",
+    }, 
 }
 
 def verify_password(plain_password, hashed_password):

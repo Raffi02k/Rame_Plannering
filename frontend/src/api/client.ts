@@ -58,7 +58,22 @@ export const api = {
             },
             body: formData,
         });
-        if (!res.ok) throw new Error('Login failed');
+        if (!res.ok) {
+            let message = 'Inloggning misslyckades';
+            try {
+                const errorBody = await res.json();
+                if (typeof errorBody?.detail === 'string' && errorBody.detail.trim()) {
+                    message = errorBody.detail;
+                } else if (res.status === 401) {
+                    message = 'Fel användarnamn eller lösenord';
+                }
+            } catch {
+                if (res.status === 401) {
+                    message = 'Fel användarnamn eller lösenord';
+                }
+            }
+            throw new Error(message);
+        }
         return res.json();
     },
     getMe: async (token: string) => {
@@ -72,6 +87,20 @@ export const api = {
             role: data.role,
             unitId: data.unit_id ?? null,
             avatar: data.avatar ?? undefined,
+        };
+    },
+    getMeOidc: async (token: string) => {
+        const data = await fetchFromApi('/oidc/me', {
+            headers: authHeaders(token)
+        });
+        return {
+            id: data.id,
+            username: data.username,
+            name: data.name,
+            role: data.role,
+            unitId: data.unit_id ?? null,
+            avatar: data.avatar ?? undefined,
+            authMethod: data.auth_method ?? 'oidc',
         };
     },
 

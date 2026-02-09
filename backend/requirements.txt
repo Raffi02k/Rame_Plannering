@@ -7,3 +7,4 @@ passlib[bcrypt]
 python-multipart
 requests
 python-dotenv
+PyJWT

@@ -13,7 +13,10 @@ class User(BaseModel):
     id: str
     username: str
     name: str
+    full_name: Optional[str] = None
+    email: Optional[str] = None
     role: str
+    auth_method: Optional[str] = None
     unit_id: Optional[str] = None
     avatar: Optional[str] = None # URL to avatar image
     class Config: from_attributes = True

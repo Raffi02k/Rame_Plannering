@@ -21,8 +21,14 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     name = Column(String)
+    full_name = Column(String, nullable=True)
+    email = Column(String, unique=True, index=True, nullable=True)
     avatar = Column(String, nullable=True)
     role = Column(String)  # 'admin', 'staff', 'user', 'unit_admin'
+    auth_method = Column(String, default="local")
+    oidc_id = Column(String, unique=True, index=True, nullable=True)
+    oidc_tenant_id = Column(String, nullable=True)
+    is_disabled = Column(Boolean, default=False)
     unit_id = Column(String, ForeignKey("units.id"))
     unit = relationship("Unit")
     # units som en unit_admin är kopplad till

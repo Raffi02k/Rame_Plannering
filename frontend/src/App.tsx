@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import AdminPage from './pages/admin/AdminPage';
@@ -8,6 +9,7 @@ import { TaskProvider } from './context/TaskContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { RoleGate } from './components/RoleGate';
 import { TokenInspector } from './components/TokenInspector';
+import { LoadingScreen } from './components/LoadingScreen';
 
 /**
  * A component to protect routes based on authentication and roles
@@ -16,10 +18,14 @@ const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedRoles: ("Admin" | "Personal" | "Brukare")[];
 }> = ({ children, allowedRoles }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
+  }
+
+  if (!user) {
+    return <LoadingScreen label="Loggar in" />;
   }
 
   return (
@@ -29,22 +35,17 @@ const ProtectedRoute: React.FC<{
   );
 };
 
-const LoadingScreen: React.FC = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 text-white relative overflow-hidden">
-      <div className="absolute -top-32 -left-20 h-80 w-80 rounded-full bg-indigo-500/20 blur-[120px]" />
-      <div className="absolute -bottom-32 -right-10 h-96 w-96 rounded-full bg-purple-500/20 blur-[140px]" />
-      <div className="relative z-10 flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 backdrop-blur-xl shadow-2xl">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-        <div className="text-sm uppercase tracking-[0.2em] text-slate-200">Loading session</div>
-      </div>
-    </div>
-  );
-};
-
 const AppContent: React.FC = () => {
-  const { isLoading } = useAuth();
+  const { isLoading, isLoggingIn, isLoggingOut, loadingLabel } = useAuth();
 
+  // Unified priority loading logic
+  if (loadingLabel) return <LoadingScreen label={loadingLabel} />;
+
+  // Fallbacks for specific flags
+  if (isLoggingOut) return <LoadingScreen label="Loggar ut" />;
+  if (isLoggingIn) return <LoadingScreen label="Loggar in" />;
+
+  // Implicit data loading (e.g. refreshLookups)
   if (isLoading) return <LoadingScreen />;
 
   return (

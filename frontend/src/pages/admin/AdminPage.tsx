@@ -20,6 +20,7 @@ import { WeekSchedule } from './components/WeekSchedule';
 import { TaskModal } from './modals/TaskModal';
 import { ReportModal } from './modals/ReportModal';
 import { FilterBar } from './components/FilterBar';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 export default function AdminPage() {
   // State
@@ -39,7 +40,7 @@ export default function AdminPage() {
   const [isTaskModalOpen, setTaskModalOpen] = useState(false);
   const [isReportModalOpen, setReportModalOpen] = useState(false);
 
-  const { tasks: globalTasks, updateTask: globalUpdateTask, addTask: globalAddTask, deleteTask: globalDeleteTask, getTaskStatus, loadDay } = useTasks();
+  const { tasks: globalTasks, updateTask: globalUpdateTask, addTask: globalAddTask, deleteTask: globalDeleteTask, getTaskStatus, loadDay, isLoading: isTasksLoading } = useTasks();
 
   // Load data when date/unit changes
   React.useEffect(() => {
@@ -213,6 +214,10 @@ export default function AdminPage() {
   const currentUnitName =
     unitsList.find(u => u.id === currentUnitId)?.name || currentUnitId;
 
+  if (isTasksLoading || !currentUnitId) {
+    return <LoadingScreen label="Laddar schema" />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-900" dir={activeLang === 'ar' ? 'rtl' : 'ltr'}>
       <AdminHeader
@@ -230,7 +235,7 @@ export default function AdminPage() {
       <main className="flex-1 min-w-0 flex flex-col max-w-[1800px] mx-auto w-full px-4 sm:px-6 py-6">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            {viewMode === 'day' ? t.titleDay : t.titleWeek} - {currentUnitName}
+            {currentUnitName}
           </h1>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -254,7 +259,7 @@ export default function AdminPage() {
 
         {missedTasks.length > 0 && (
           <MissedTaskAlert
-            title={viewMode === 'day' ? t.missedTitle : `${t.missedTitle} (${t.titleWeek.toLowerCase()})`}
+            title={t.missedTitle}
             description={missedDescription}
             buttonText={t.missedButton}
             onShowReport={() => setReportModalOpen(true)}

@@ -1,6 +1,7 @@
 import { Configuration, LogLevel, PublicClientApplication } from "@azure/msal-browser";
 
 // Environment variables from Vite (prefixed with VITE_)
+const apiScope = import.meta.env.VITE_ENTRA_API_SCOPE;
 const clientId = import.meta.env.VITE_ENTRA_CLIENT_ID;
 const tenantId = import.meta.env.VITE_ENTRA_TENANT_ID;
 
@@ -49,8 +50,12 @@ export const msalConfig: Configuration = {
  * Scopes we request during login
  */
 export const loginRequest = {
-    scopes: ["openid", "profile", "User.Read"],
+    scopes: ["openid", "profile", "User.Read", apiScope].filter(Boolean),
     prompt: "select_account",
+};
+
+export const apiTokenRequest = {
+    scopes: [apiScope].filter(Boolean),
 };
 
 // Initialize the MSAL instance

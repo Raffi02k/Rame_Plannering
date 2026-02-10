@@ -1,41 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
 import { User as UserIcon, Building2, Fingerprint, Lock, AlertCircle } from "lucide-react";
+import { LoadingScreen } from "../components/LoadingScreen";
 
 export const LoginPage = () => {
-    const { login, isAuthenticated, user } = useAuth();
+    const { login, isAuthenticated, user, isLoggingIn } = useAuth();
 
     // Local login state
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+
+    if (isLoggingIn) {
+        return <LoadingScreen label="Loggar in" />;
+    }
 
     // Redirect logic if already logged in
     if (isAuthenticated && user) {
         if (user.role === 'admin') return <Navigate to="/admin" replace />;
         if (user.role === 'staff' || user.role === 'personal') return <Navigate to="/staff" replace />;
         if (user.role === 'user' || user.role === 'brukare') return <Navigate to="/user" replace />;
-        // Default fallback if role is unknown but authenticated
         return <Navigate to="/staff" replace />;
     }
 
     const handleMsalLogin = () => {
-        login().catch((e) => console.error(e));
+        // Mark that we are starting an OIDC login flow to trigger the post-redirect splash
+        window.localStorage.setItem('oidc_starting_up', 'true');
+        login().catch((e) => {
+            window.localStorage.removeItem('oidc_starting_up');
+            console.error(e);
+        });
     };
 
     const handleLocalLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
         try {
             await login(username, password);
-            // Redirect happens automatically via the conditional check above
         } catch (err: any) {
             setError(err.message || 'Inloggning misslyckades');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -116,10 +120,10 @@ export const LoginPage = () => {
 
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={isLoggingIn}
                             className="w-full bg-slate-800 hover:bg-slate-700 text-white py-3.5 rounded-xl font-bold transition-all border border-slate-700 active:scale-[0.98] disabled:opacity-50"
                         >
-                            {loading ? 'Loggar in...' : 'Logga in Lokalt'}
+                            {isLoggingIn ? 'Loggar in...' : 'Logga in Lokalt'}
                         </button>
                     </form>
 

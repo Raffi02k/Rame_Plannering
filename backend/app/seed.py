@@ -1,12 +1,17 @@
 from sqlalchemy.orm import Session
-from . import models, db, auth
+from sqlalchemy.exc import IntegrityError
+
+from . import models, db
+from .auth import local_jwt
 
 def seed_data():
     db_session = db.SessionLocal()
 
-    # Check if data exists
-    if db_session.query(models.Unit).first():
-        print("Data already seeded.")
+    print("Checking if database needs seeding...")
+    # Skip if admin user exists (to avoid locking and redundant work)
+    if db_session.query(models.User).filter(models.User.id == "admin").first():
+        print("Database already seeded. Skipping.")
+        db_session.close()
         return
 
     print("Seeding data...")
@@ -17,17 +22,18 @@ def seed_data():
         models.Unit(id="u2", name="SÄBO Källstorpsgården", type="sabo"),
         models.Unit(id="u3", name="Utvecklingsverksamheten", type="lss"),
     ]
-    db_session.add_all(units)
-    db_session.commit()  # commit så relationer kan referera säkert
+    for unit in units:
+        db_session.merge(unit)
+    db_session.commit()
 
     # Hash once
-    pwd_hash = auth.get_password_hash("password123")
+    pwd_hash = local_jwt.get_password_hash("password123")
 
     # --- USERS ---
     users = [
         # Global Admin (ser alla units)
         models.User(id="admin", name="Admin User", role="admin", unit_id="u1", username="admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=admin"),
-        models.User(id="oidc-raffi", name="Raffi Medzad Aghlian", role="admin", unit_id="u3", username="rafmed002@trollhattan.se", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=raffi"),
+        models.User(id="oidc-raffi", name="Raffi Medzad Aghlian", role="admin", unit_id="u3", username="rafmed002@trollhattan.se", email="rafmed002@trollhattan.se", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=raffi"),
 
         # Unit Admins (ser bara kopplade units via admin_units)
         models.User(id="ua1", name="Kronan Admin", role="unit_admin", unit_id="u1", username="kronan_admin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=kronan_admin"),
@@ -56,6 +62,11 @@ def seed_data():
         models.User(id="s20", name="Per Ström", role="staff", unit_id="u2", username="per", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=per"),
         models.User(id="s21", name="Kerstin Falk", role="staff", unit_id="u2", username="kerstin", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=kerstin"),
 
+
+        # Unit 3 staff 
+        models.User(id="oidc-jajn", name="Johanna Nyman", role="staff", unit_id="u3", username="jajn@trollhattan.se", email="jajn@trollhattan.se", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=jajn"),
+        models.User(id="oidc-raffi-staff", name="Raffi Medzad Aghlian", role="staff", unit_id="u3", username="rafmed001@trollhattan.se", email="rafmed001@trollhattan.se", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=raffi"),
+
         # Brukare (koppla till unit_id så filtrering funkar)
         models.User(id="b1", name="Brukare nr 1", role="user", unit_id="u1", username="b1", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=b1"),
         models.User(id="b2", name="Brukare nr 2", role="user", unit_id="u1", username="b2", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=b2"),
@@ -63,7 +74,8 @@ def seed_data():
         models.User(id="b4", name="Brukare nr 4", role="user", unit_id="u2", username="b4", hashed_password=pwd_hash, avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=b4"),
     ]
 
-    db_session.add_all(users)
+    for user in users:
+        db_session.merge(user)
     db_session.commit()
 
     # --- Link unit_admins to their units via association table ---
@@ -73,10 +85,17 @@ def seed_data():
     u2 = db_session.query(models.Unit).filter(models.Unit.id == "u2").first()
 
     # Koppla: ua1 -> u1, ua2 -> u2
-    kronan_admin.admin_units.append(u1)
-    kallstorp_admin.admin_units.append(u2)
+    if kronan_admin is not None and u1 is not None:
+        if u1 not in kronan_admin.admin_units:
+            kronan_admin.admin_units.append(u1)
+    if kallstorp_admin is not None and u2 is not None:
+        if u2 not in kallstorp_admin.admin_units:
+            kallstorp_admin.admin_units.append(u2)
 
-    db_session.commit()
+    try:
+        db_session.commit()
+    except IntegrityError:
+        db_session.rollback()
 
     # --- TASK TEMPLATES ---
     # Using data from frontend/lib/demo-data.ts
@@ -504,33 +523,136 @@ def seed_data():
         # UNIT 3: UTVECKLINGSVERKSAMHETEN
         # ===========================================================================
 
+        # --- MORNING ---
         models.TaskTemplate(
-            id='u3-dev-a', unit_id='u3', title='Kodgranskning', description='Granska pull requests och ge feedback.',
-            substitute_instructions='Fokusera på säkerhet och läsbarhet.',
+            id='u3-m1', unit_id='u3', title='Daglig Stand-up', description='Snabb avstämning med teamet om dagens prioriteringar.',
+            substitute_instructions='Varje deltagare delar: vad gjorde jag igår, vad gör jag idag, blockerare.',
             category='Admin', role_type='dev_alpha', is_shared=False,
-            meta_data={'timeStart': '08:15', 'timeEnd': '10:00'}
+            meta_data={'timeStart': '08:00', 'timeEnd': '08:15'}
         ),
         models.TaskTemplate(
-            id='u3-dev-b', unit_id='u3', title='Sprintplanering', description='Planera nästa sprint och prioritera backlog.',
-            substitute_instructions='Uppdatera Jira och markera uppskattningar.',
-            category='Admin', role_type='dev_beta', is_shared=False,
-            meta_data={'timeStart': '10:15', 'timeEnd': '12:00'}
+            id='u3-m2', unit_id='u3', title='Kodgranskning', description='Granska pull requests och ge konstruktiv feedback.',
+            substitute_instructions='Fokusera på säkerhet, läsbarhet och att koden följer teamets standards.',
+            category='Admin', role_type='dev_alpha', is_shared=False,
+            meta_data={'timeStart': '08:15', 'timeEnd': '09:30'}
         ),
         models.TaskTemplate(
-            id='u3-dev-c', unit_id='u3', title='Teknisk felsökning', description='Felsök inrapporterade buggar i utvecklingsmiljö.',
-            substitute_instructions='Dokumentera rotorsak i loggboken.',
+            id='u3-m3', unit_id='u3', title='Feature-utveckling', description='Arbeta på "User Profile"-funktionen.',
+            substitute_instructions='Se senaste designskiss i Figma. Backend-API finns redan klart.',
+            category='Service', role_type='dev_beta', is_shared=False,
+            meta_data={'timeStart': '08:30', 'timeEnd': '10:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-m4', unit_id='u3', title='Bug Fix Session', description='Åtgärda kritiska buggar rapporterade från produktion.',
+            substitute_instructions='Prioritera P1-buggar först. Dokumentera alla ändringar i Jira.',
             category='Service', role_type='dev_gamma', is_shared=False,
+            meta_data={'timeStart': '09:00', 'timeEnd': '10:30'}
+        ),
+        models.TaskTemplate(
+            id='u3-m5', unit_id='u3', title='API-integration', description='Integrera betalningssystem med backend.',
+            substitute_instructions='API-nycklarna finns i 1Password. Testa i sandbox-miljö först.',
+            category='Admin', role_type='dev_beta', is_shared=False,
+            meta_data={'timeStart': '10:00', 'timeEnd': '11:30'}
+        ),
+        models.TaskTemplate(
+            id='u3-m6', unit_id='u3', title='Databas-optimering', description='Indexera stora tabeller för bättre performance.',
+            substitute_instructions='Kör förslag från pgAnalyze rapport. Ta backup först!',
+            category='Service', role_type='dev_delta', is_shared=False,
+            meta_data={'timeStart': '10:30', 'timeEnd': '12:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-m7', unit_id='u3', title='Unit-testing', description='Skriv tester för nya funktioner.',
+            substitute_instructions='Sikta på minst 80% code coverage. Använd Jest för frontend.',
+            category='Admin', role_type='dev_gamma', is_shared=False,
+            meta_data={'timeStart': '11:00', 'timeEnd': '12:00'}
+        ),
+
+        # --- LUNCH / MIDDAG ---
+        models.TaskTemplate(
+            id='u3-l1', unit_id='u3', title='Teknisk diskussion', description='Lunchsamtal om ny arkitektur.',
+            substitute_instructions='Brainstorma kring microservices vs monolith för nästa projekt.',
+            category='Social', role_type='dev_alpha', is_shared=False,
+            meta_data={'timeStart': '12:00', 'timeEnd': '13:00'}
+        ),
+
+        # --- AFTERNOON ---
+        models.TaskTemplate(
+            id='u3-a1', unit_id='u3', title='Sprintplanering', description='Planera nästa sprint och prioritera backlog.',
+            substitute_instructions='Uppdatera Jira. Estimera alla user stories tillsammans med teamet.',
+            category='Admin', role_type='dev_beta', is_shared=False,
             meta_data={'timeStart': '13:00', 'timeEnd': '14:30'}
         ),
         models.TaskTemplate(
-            id='u3-dev-d', unit_id='u3', title='Teams-möte', description='Daglig avstämning i Teams.',
-            substitute_instructions='Skriv kort status i chatten efter mötet.',
+            id='u3-a2', unit_id='u3', title='Frontend-styling', description='Implementera nya designsystemet.',
+            substitute_instructions='Använd Tailwind CSS-klasser. Se style-guide i dokumentationen.',
+            category='Service', role_type='dev_alpha', is_shared=False,
+            meta_data={'timeStart': '13:30', 'timeEnd': '15:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-a3', unit_id='u3', title='Security Review', description='Säkerhetsgenomgång av autentiseringskoden.',
+            substitute_instructions='Kontrollera JWT-expiration, CORS-settings, och input-validering.',
+            category='Admin', role_type='dev_delta', is_shared=False,
+            meta_data={'timeStart': '13:00', 'timeEnd': '14:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-a4', unit_id='u3', title='Teknisk dokumentation', description='Uppdatera README och API-docs.',
+            substitute_instructions='Använd Swagger för API:et. Inkludera exempel för alla endpoints.',
+            category='Admin', role_type='dev_gamma', is_shared=False,
+            meta_data={'timeStart': '14:00', 'timeEnd': '15:30'}
+        ),
+        models.TaskTemplate(
+            id='u3-a5', unit_id='u3', title='Performance-test', description='Kör lasttester på staging.',
+            substitute_instructions='Använd k6 script i /tests/load. Sikta på <200ms response time.',
+            category='Service', role_type='dev_beta', is_shared=False,
+            meta_data={'timeStart': '14:30', 'timeEnd': '15:30'}
+        ),
+        models.TaskTemplate(
+            id='u3-a6', unit_id='u3', title='Deployment', description='Deploya senaste versionen till staging.',
+            substitute_instructions='Följ deployment-checklist. Verifiera smoke-tests efter deploy.',
+            category='Admin', role_type='dev_alpha', is_shared=False,
+            meta_data={'timeStart': '15:00', 'timeEnd': '15:45'}
+        ),
+        models.TaskTemplate(
+            id='u3-a7', unit_id='u3', title='Teams-möte', description='Veckoavstämning med Product Owner.',
+            substitute_instructions='Presentera sprint-progress. Skriv kort status i chatten efter mötet.',
             category='Social', role_type='dev_delta', is_shared=False,
-            meta_data={'timeStart': '15:00', 'timeEnd': '16:30'}
+            meta_data={'timeStart': '15:00', 'timeEnd': '16:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-a8', unit_id='u3', title='Refactoring Session', description='Städa upp legacy-kod i användarmodulen.',
+            substitute_instructions='Bryt ut stora funktioner. Följ Single Responsibility Principle.',
+            category='Service', role_type='dev_gamma', is_shared=False,
+            meta_data={'timeStart': '15:30', 'timeEnd': '17:00'}
+        ),
+
+        # --- LATE AFTERNOON / EVENING ---
+        models.TaskTemplate(
+            id='u3-e1', unit_id='u3', title='CI/CD Pipeline', description='Felsök trasiga builds i GitHub Actions.',
+            substitute_instructions='Kolla logs i Actions-tab. Ofta beror det på dependency-versioner.',
+            category='Admin', role_type='dev_beta', is_shared=False,
+            meta_data={'timeStart': '16:00', 'timeEnd': '17:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-e2', unit_id='u3', title='Support-ärenden', description='Hantera inkommande support-tickets.',
+            substitute_instructions='Svara inom 24h. Eskalera kritiska ärenden till teamledare.',
+            category='Social', role_type='dev_delta', is_shared=False,
+            meta_data={'timeStart': '16:30', 'timeEnd': '17:30'}
+        ),
+        models.TaskTemplate(
+            id='u3-e3', unit_id='u3', title='Kompetensutv: React', description='Lär dig nya hooks i React 19.',
+            substitute_instructions='Gå igenom officiella docs. Testa i sandbox-projekt.',
+            category='Social', role_type='dev_alpha', is_shared=False,
+            meta_data={'timeStart': '16:00', 'timeEnd': '17:00'}
+        ),
+        models.TaskTemplate(
+            id='u3-e4', unit_id='u3', title='Daglig Retrospektiv', description='Daglig reflektion: vad gick bra/dåligt?',
+            substitute_instructions='Skriv ner lärdomar i teamets Miro-board.',
+            category='Admin', role_type='dev_gamma', is_shared=False,
+            meta_data={'timeStart': '17:00', 'timeEnd': '17:15'}
         ),
     ]
-    db_session.add_all(tasks)
-
+    for task in tasks:
+        db_session.merge(task)
     db_session.commit()
     print("Data seeded successfully!")
     db_session.close()

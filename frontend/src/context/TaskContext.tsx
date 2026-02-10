@@ -4,6 +4,7 @@ import { api } from '../api/client';
 
 interface TaskContextType {
   tasks: Task[];
+  isLoading: boolean;
   updateTask: (taskId: string, updates: Partial<Task>, date?: string) => void;
   getTaskStatus: (taskId: string, date: string) => TaskStatus;
   addTask: (task: Task) => void;
@@ -15,10 +16,12 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   // const [reports, setReports] = useState<Report[]>([]); // Removed: using task.reportData instead
   const [instanceStatuses, setInstanceStatuses] = useState<Record<string, TaskStatus>>({});
 
   const loadDay = React.useCallback(async (date: string, unitId: string) => {
+    setIsLoading(true);
     try {
       const data = await api.getDaySchedule(unitId, date);
 
@@ -67,6 +70,8 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (e) {
       console.error("Failed to load tasks", e);
       setTasks([]); // Clear tasks on error to prevent stale state issues
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -122,12 +127,13 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const value = React.useMemo(() => ({
     tasks,
+    isLoading,
     updateTask,
     getTaskStatus,
     addTask,
     deleteTask,
     loadDay
-  }), [tasks, updateTask, getTaskStatus, addTask, deleteTask, loadDay]);
+  }), [tasks, isLoading, updateTask, getTaskStatus, addTask, deleteTask, loadDay]);
 
   return (
     <TaskContext.Provider value={value}>

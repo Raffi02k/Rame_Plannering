@@ -1,77 +1,185 @@
-# Autopilot Planner – Schemasystem {Rame} (Demo)
+# Rame Plannering – Schedule Management System
 
-Detta är ett prototypprojekt för ett digitalt schemasystem anpassat för kommunal vård och omsorg
-(t.ex. SÄBO och LSS). Fokus ligger på:
+Ett digitalt schemasystem för kommunal vård och omsorg (LSS och SÄBO) med hybrid autentisering och intelligent skiftfördelning.
 
-- tydlig bemanning per enhet och dag
-- strukturerade arbetsuppgifter (Brukarnära / HSL / Praktisk / Administrativ)
-- koppling mellan personal, pass, färgteam (Röd/Blå/Lila/Vit) och sida (Norr/Söder)
-- en kodstruktur som är lätt att bygga vidare på med riktig backend senare
+## 🎯 Översikt
 
-Projektet är byggt i React + TypeScript + Vite, med Tailwind CSS för UI och en tydlig mappstruktur
-för sidor, komponenter, data och kontext.
+Rame Plannering är ett komplett system för schemahantering som kombinerar:
+- **FastAPI Backend** med SQLite-databas och hybrid autentisering (Lokal + OIDC/Microsoft Entra ID)
+- **React Frontend** med MSAL-integration för enkel Single Sign-On
+- **Rollbaserad åtkomst** för Admin, Personal och Brukare
+- **Deterministisk skiftfördelning** som garanterar konsistens mellan olika vyer
 
-## Funktioner (i prototypen just nu)
+## ✨ Huvudfunktioner
 
-- Login med roll-val
-  - Inloggningssida med val av roll: Admin, Personal, Brukare
-  - Rollen styr vilken sida man hamnar på (/admin, /staff, /user)
-- Admin – Schema & bemanning
-  - Välj enhet (t.ex. SÄBO Källstorp eller Daglig verksamhet Kronan)
-  - Se bemanning idag:
-    - personal på enheten
-    - deras pass (tider)
-    - ev. färgteam: Röd / Blå / Lila / Vit
-    - ev. sida: Norr / Söder
-  - Se dagens uppgifter per kategori:
-    - Brukarnära, HSL, Praktisk, Administrativ
-    - start- och sluttid
-    - kopplad brukare
-    - om signering krävs (HSL)
-    - om uppgiften kräver två personal
-- Demo-data (ingen riktig backend ännu)
-  - Allt data (enheter, personal, brukare, pass, uppgifter, assignment-status) ligger i
-    src/lib/demo-data.ts
-  - Struktur inspirerad av verklig verksamhet:
-    - enheter: LSS, SÄBO
-    - rum, våningsplan, Norr/Söder, färgteam
-    - uppgifter med kategorier och signeringskrav
-- Förberett för framtida backend
-  - Kod och typer (src/lib/types.tsx) är designade så att demo-data senare kan bytas ut mot
-    API-anrop / databas.
-  - React Router används för att enkelt kunna lägga på auth och skyddade routes senare.
+### Autentisering
+- **Hybrid autentisering**: Både lokalt (användarnamn/lösenord) och OIDC (Microsoft Entra ID)
+- **Concurrency-säker användarskapande**: Hanterar samtidiga inloggningar utan databaskrockar
+- **Automatisk enhetstilldelning**: Nya OIDC-användare tilldelas automatiskt "Unit 3"
+- **Rollbaserad säkerhet**: Admin, Enhetschef, Personal, Brukare
 
-## Tech stack
+### Schema & Bemanning
+- **Intelligent skiftfördelning**: Deterministisk algoritm baserad på enbart personalmärkning
+- **Färgteam**: Röd, Blå, Lila, Vit (LSS) / Röd, Blå (SÄBO)
+- **Pass**: Morgon, Kväll, Natt med specifika tider
+- **Uppgiftskategorier**: Brukarnära, HSL (signering krävs), Praktisk, Administrativ
 
-- Vite – byggverktyg & dev-server
-- React + TypeScript
-- React Router DOM – routing mellan sidor
-- Tailwind CSS – utility-baserad styling
-- lucide-react – ikoner
-- Egen Schedule-context (src/context/schedule-context.tsx) för att centralt hantera schema-data
-  längre fram
+### Vyer
+- **Admin**: Översikt alla enheter, full schemahantering, signeringskontroll
+- **Personal**: Personligt schema, uppgiftsvy med tidslinje, signering
+- **Brukare**: Schemaöversikt för egen vårdplan
 
-## Komma igång
+## 🛠️ Tech Stack
 
-### 1. Klona repot
+### Backend
+- **FastAPI** - Modern Python web framework
+- **SQLAlchemy** - ORM för databashantering
+- **SQLite** - Lightweight databas med WAL-mode
+- **python-jose** - JWT token-hantering
+- **passlib** - Password hashing (bcrypt)
+- **requests** - HTTP-klient för OIDC JWKS
 
+### Frontend
+- **Vite** - Snabb build tool
+- **React 18** + **TypeScript** - Komponentbibliotek med typsäkerhet
+- **React Router** - Client-side routing
+- **MSAL (Microsoft Authentication Library)** - OIDC/Azure AD-integration
+- **Tailwind CSS** - Utility-first CSS framework
+- **Lucide React** - Ikoner
+
+## 🚀 Kom Igång
+
+### Förutsättningar
+- **Python 3.13+**
+- **Node.js 18+**
+- **npm eller yarn**
+
+### 1. Klona projektet
 ```bash
 git clone https://github.com/Raffi02k/rame_Plannering.git
 cd rame_Plannering
 ```
 
-### 2. Backend (FastAPI)
+### 2. Backend Setup
 
+#### Skapa virtuell miljö
 ```bash
-ls -a
-source venv/bin/activate
-python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # På Windows: venv\\Scripts\\activate
 ```
 
-### 3. Frontend (Vite)
-
+#### Installera dependencies
 ```bash
+pip install -r requirements.txt
+```
+
+#### Konfigurera miljövariabler
+Skapa `.env` i `backend/`-mappen:
+```env
+# Local JWT
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# OIDC/Microsoft Entra ID (valfritt)
+OIDC_ISSUER=https://login.microsoftonline.com/{tenant-id}/v2.0
+OIDC_AUDIENCE=api://{your-api-client-id}
+OIDC_JWKS_URL=https://login.microsoftonline.com/{tenant-id}/discovery/v2.0/keys
+OIDC_REQUIRED_SCOPES=api://your-api-scope
+```
+
+#### Starta backend
+```bash
+uvicorn app.main:app --reload
+```
+Backend körs nu på `http://localhost:8000`
+
+### 3. Frontend Setup
+
+#### Installera dependencies
+```bash
+cd frontend
 npm install
+```
+
+#### Konfigurera MSAL (valfritt för OIDC)
+Uppdatera `frontend/src/auth/msalConfig.ts` med dina Azure AD-värden.
+
+#### Starta frontend
+```bash
 npm run dev
 ```
+Frontend körs nu på `http://localhost:5173`
+
+### 4. Testa systemet
+
+**Lokala testanvändare** (skapas automatiskt vid första start):
+- **Admin**: `admin` / `password123`
+- **Personal (Unit 1)**: `emma` / `password123`
+- **Personal (Unit 2)**: `karim` / `password123`
+
+## 📁 Projektstruktur
+
+```
+rame_Plannering/
+├── backend/
+│   ├── app/
+│   │   ├── auth/          # Autentiseringslogik (local_jwt + oidc)
+│   │   ├── routers/       # API endpoints
+│   │   ├── models.py      # SQLAlchemy models
+│   │   ├── seed.py        # Databasinitiering
+│   │   └── main.py        # FastAPI app
+│   └── requirements.txt
+│
+└── frontend/
+    ├── src/
+    │   ├── auth/          # MSAL-konfiguration
+    │   ├── context/       # AuthContext + TaskContext
+    │   ├── pages/         # Admin, Staff, User
+    │   ├── lib/           # Utilities (t.ex. shift calculation)
+    │   └── App.tsx
+    └── package.json
+```
+
+## 🔐 Autentisering
+
+### Hybrid Auth-system
+Systemet stöder **både** lokal autentisering och OIDC:
+
+1. **Lokal JWT**: Användarnamn/lösenord → JWT-token
+2. **OIDC (Microsoft Entra ID)**: SSO via MSAL → Microsoft token → Backend validering
+
+### Concurrency-säker användarskapande
+- Vid OIDC-inloggning försöker flera requests skapa samma användare samtidigt
+- `IntegrityError` fångas och användaren hämtas istället
+- Garanterar att alla requests lyckas utan krascher
+
+## 📊 Skiftlogik
+
+### Problem som löstes
+Tidigare kunde skiften "hoppa" mellan personal i Admin vs. Staff-vyn eftersom:
+- Admin-listan innehöll fler roller (admin, enhetschef, brukare)
+- Personal-listan innehöll bara personal
+
+### Lösning
+`getShiftForDate()` filtrerar nu **alltid** till endast `staff`/`personal`-roller innan skiftberäkning:
+```typescript
+const unitStaff = staffList
+    .filter(s => s.unitId === unitId && isStaffRole(s.role))
+    .sort((a, b) => a.id.localeCompare(b.id));
+```
+Detta garanterar att både Admin och Personal ser exakt samma skiftfördelning.
+
+## 📖 Dokumentation
+
+- **Backend**: `backend/README.md` - API-dokumentation, databas, autentisering
+- **Frontend**: `frontend/README.md` - React-komponent, MSAL, skiftlogik
+
+## 🙏 Bidrag
+
+Detta är ett LIA-projekt utvecklat av Raffi Medzad Aghlian.
+
+## 📝 Licens
+
+Privat projekt - ingen licens specificerad.

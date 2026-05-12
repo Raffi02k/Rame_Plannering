@@ -1,185 +1,96 @@
 # Rame Plannering – Schedule Management System
 
-Ett digitalt schemasystem för kommunal vård och omsorg (LSS och SÄBO) med hybrid autentisering och intelligent skiftfördelning.
+Ett digitalt schemasystem för kommunal vård och omsorg med hybrid autentisering, schemahantering och deploymentstöd för Vercel + Supabase.
 
-## 🎯 Översikt
+## Översikt
 
-Rame Plannering är ett komplett system för schemahantering som kombinerar:
-- **FastAPI Backend** med SQLite-databas och hybrid autentisering (Lokal + OIDC/Microsoft Entra ID)
-- **React Frontend** med MSAL-integration för enkel Single Sign-On
-- **Rollbaserad åtkomst** för Admin, Personal och Brukare
-- **Deterministisk skiftfördelning** som garanterar konsistens mellan olika vyer
+Rame Plannering kombinerar:
 
-## ✨ Huvudfunktioner
+- FastAPI-backend med lokal SQLite i utveckling och PostgreSQL i produktion
+- React + Vite-frontend med MSAL-integration för Microsoft Entra ID
+- Rollbaserad åtkomst för admin, personal och brukare
+- API-routning via `/api` för lokal utveckling och Vercel-deploy
 
-### Autentisering
-- **Hybrid autentisering**: Både lokalt (användarnamn/lösenord) och OIDC (Microsoft Entra ID)
-- **Concurrency-säker användarskapande**: Hanterar samtidiga inloggningar utan databaskrockar
-- **Automatisk enhetstilldelning**: Nya OIDC-användare tilldelas automatiskt "Unit 3"
-- **Rollbaserad säkerhet**: Admin, Enhetschef, Personal, Brukare
+## Tech Stack
 
-### Schema & Bemanning
-- **Intelligent skiftfördelning**: Deterministisk algoritm baserad på enbart personalmärkning
-- **Färgteam**: Röd, Blå, Lila, Vit (LSS) / Röd, Blå (SÄBO)
-- **Pass**: Morgon, Kväll, Natt med specifika tider
-- **Uppgiftskategorier**: Brukarnära, HSL (signering krävs), Praktisk, Administrativ
+- Backend: FastAPI, SQLAlchemy, python-jose, passlib, requests
+- Frontend: React, TypeScript, Vite, React Router, Tailwind CSS, MSAL
+- Deployment: Vercel + Supabase PostgreSQL
 
-### Vyer
-- **Admin**: Översikt alla enheter, full schemahantering, signeringskontroll
-- **Personal**: Personligt schema, uppgiftsvy med tidslinje, signering
-- **Brukare**: Schemaöversikt för egen vårdplan
-
-## 🛠️ Tech Stack
-
-### Backend
-- **FastAPI** - Modern Python web framework
-- **SQLAlchemy** - ORM för databashantering
-- **SQLite** - Lightweight databas med WAL-mode
-- **python-jose** - JWT token-hantering
-- **passlib** - Password hashing (bcrypt)
-- **requests** - HTTP-klient för OIDC JWKS
-
-### Frontend
-- **Vite** - Snabb build tool
-- **React 18** + **TypeScript** - Komponentbibliotek med typsäkerhet
-- **React Router** - Client-side routing
-- **MSAL (Microsoft Authentication Library)** - OIDC/Azure AD-integration
-- **Tailwind CSS** - Utility-first CSS framework
-- **Lucide React** - Ikoner
-
-## 🚀 Kom Igång
+## Kom Igång
 
 ### Förutsättningar
-- **Python 3.13+**
-- **Node.js 18+**
-- **npm eller yarn**
+
+- Python 3.13+
+- Node.js 18+
 
 ### 1. Klona projektet
+
 ```bash
 git clone https://github.com/Raffi02k/rame_Plannering.git
 cd rame_Plannering
 ```
 
-### 2. Backend Setup
+### 2. Backend
 
-#### Skapa virtuell miljö
 ```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate  # På Windows: venv\\Scripts\\activate
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m uvicorn backend.app.main:app --reload
 ```
 
-#### Installera dependencies
+Backend körs då på `http://localhost:8000`.
+
+Om du vill fylla databasen med demo-data:
+
 ```bash
-pip install -r requirements.txt
+python -m backend.app.seed
 ```
 
-#### Konfigurera miljövariabler
-Skapa `.env` i `backend/`-mappen:
-```env
-# Local JWT
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+### 3. Frontend
 
-# OIDC/Microsoft Entra ID (valfritt)
-OIDC_ISSUER=https://login.microsoftonline.com/{tenant-id}/v2.0
-OIDC_AUDIENCE=api://{your-api-client-id}
-OIDC_JWKS_URL=https://login.microsoftonline.com/{tenant-id}/discovery/v2.0/keys
-OIDC_REQUIRED_SCOPES=api://your-api-scope
-```
-
-#### Starta backend
-```bash
-uvicorn app.main:app --reload
-```
-Backend körs nu på `http://localhost:8000`
-
-### 3. Frontend Setup
-
-#### Installera dependencies
 ```bash
 cd frontend
 npm install
-```
-
-#### Konfigurera MSAL (valfritt för OIDC)
-Uppdatera `frontend/src/auth/msalConfig.ts` med dina Azure AD-värden.
-
-#### Starta frontend
-```bash
 npm run dev
 ```
-Frontend körs nu på `http://localhost:5173`
 
-### 4. Testa systemet
+Frontend körs normalt på `http://localhost:5173`.
 
-**Lokala testanvändare** (skapas automatiskt vid första start):
-- **Admin**: `admin` / `password123`
-- **Personal (Unit 1)**: `emma` / `password123`
-- **Personal (Unit 2)**: `karim` / `password123`
+Frontend använder `/api` som standard. I lokal utveckling proxas det automatiskt till `http://localhost:8000` via `frontend/vite.config.ts`.
 
-## 📁 Projektstruktur
+## Miljövariabler
 
-```
-rame_Plannering/
-├── backend/
-│   ├── app/
-│   │   ├── auth/          # Autentiseringslogik (local_jwt + oidc)
-│   │   ├── routers/       # API endpoints
-│   │   ├── models.py      # SQLAlchemy models
-│   │   ├── seed.py        # Databasinitiering
-│   │   └── main.py        # FastAPI app
-│   └── requirements.txt
-│
-└── frontend/
-    ├── src/
-    │   ├── auth/          # MSAL-konfiguration
-    │   ├── context/       # AuthContext + TaskContext
-    │   ├── pages/         # Admin, Staff, User
-    │   ├── lib/           # Utilities (t.ex. shift calculation)
-    │   └── App.tsx
-    └── package.json
-```
+### Backend
 
-## 🔐 Autentisering
+Se `backend/.env.example`.
 
-### Hybrid Auth-system
-Systemet stöder **både** lokal autentisering och OIDC:
+- `DATABASE_URL`
+  - Lokalt: SQLite används som standard om variabeln saknas.
+  - Produktion: sätt till Supabase PostgreSQL-URI.
+- `SECRET_KEY`
+- `ALGORITHM`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `OIDC_ISSUER`
+- `OIDC_AUDIENCE`
+- `OIDC_JWKS_URL`
+- `OIDC_REQUIRED_SCOPES`
 
-1. **Lokal JWT**: Användarnamn/lösenord → JWT-token
-2. **OIDC (Microsoft Entra ID)**: SSO via MSAL → Microsoft token → Backend validering
+### Frontend
 
-### Concurrency-säker användarskapande
-- Vid OIDC-inloggning försöker flera requests skapa samma användare samtidigt
-- `IntegrityError` fångas och användaren hämtas istället
-- Garanterar att alla requests lyckas utan krascher
+Se `frontend/.env.example`.
 
-## 📊 Skiftlogik
+- `VITE_API_URL`
+- `VITE_ENTRA_CLIENT_ID`
+- `VITE_ENTRA_TENANT_ID`
 
-### Problem som löstes
-Tidigare kunde skiften "hoppa" mellan personal i Admin vs. Staff-vyn eftersom:
-- Admin-listan innehöll fler roller (admin, enhetschef, brukare)
-- Personal-listan innehöll bara personal
+## Deployment
 
-### Lösning
-`getShiftForDate()` filtrerar nu **alltid** till endast `staff`/`personal`-roller innan skiftberäkning:
-```typescript
-const unitStaff = staffList
-    .filter(s => s.unitId === unitId && isStaffRole(s.role))
-    .sort((a, b) => a.id.localeCompare(b.id));
-```
-Detta garanterar att både Admin och Personal ser exakt samma skiftfördelning.
+Repo:t är nu förberett för:
 
-## 📖 Dokumentation
+- frontend via Vercel static build
+- backend via Vercel Python Function i `api/index.py`
+- databas via Supabase PostgreSQL genom `DATABASE_URL`
 
-- **Backend**: `backend/README.md` - API-dokumentation, databas, autentisering
-- **Frontend**: `frontend/README.md` - React-komponent, MSAL, skiftlogik
-
-## 🙏 Bidrag
-
-Detta är ett LIA-projekt utvecklat av Raffi Medzad Aghlian.
-
-## 📝 Licens
-
-Privat projekt - ingen licens specificerad.
+Se `DEPLOYMENT.md` för den anpassade steg-för-steg-manualen för just detta repo.

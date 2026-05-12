@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import local_auth, oidc_auth, api_router
+from .routers import local_auth, oidc_auth, api_router
 from . import models, db, seed
 
 # Create tables
@@ -16,9 +16,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.include_router(local_auth.router)
 app.include_router(oidc_auth.router)
 app.include_router(api_router.router)
+app.include_router(local_auth.router, prefix="/api")
+app.include_router(oidc_auth.router, prefix="/api")
+app.include_router(api_router.router, prefix="/api")
 
 @app.on_event("startup")
 def seed_on_startup():

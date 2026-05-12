@@ -8,9 +8,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       proxy: {
-        '/me': 'http://localhost:8000',
-        '/schedule': 'http://localhost:8000',
-        '/task-instances': 'http://localhost:8000'
+        '/api': 'http://localhost:8000'
       }
     },
     define: {

@@ -1,10 +1,15 @@
 {
   "experimentalServices": {
     "frontend": {
+      "framework": "vite",
+      "entrypoint": "frontend/package.json",
+      "installCommand": "npm install",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist",
       "routePrefix": "/"
     },
     "backend": {
-      "entrypoint": "backend",
+      "entrypoint": "api/index.py",
       "routePrefix": "/api"
     }
   }

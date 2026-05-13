@@ -37,7 +37,7 @@ try:
 except ValueError as exc:
     raise RuntimeError("ACCESS_TOKEN_EXPIRE_MINUTES must be an integer") from exc
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 

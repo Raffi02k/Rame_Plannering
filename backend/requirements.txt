@@ -3,8 +3,7 @@ uvicorn
 sqlalchemy
 pydantic
 python-jose[cryptography]
-passlib[bcrypt]
-bcrypt==3.1.7
+passlib
 python-multipart
 requests
 python-dotenv

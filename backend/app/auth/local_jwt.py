@@ -6,16 +6,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-import bcrypt
-
-# Fix for passlib + bcrypt 4.0.0+ compatibility issue
-# This prevents the 'module bcrypt has no attribute __about__' error
-try:
-    if not hasattr(bcrypt, "__about__"):
-        bcrypt.__about__ = type('About', (object,), {'__version__': bcrypt.__version__})
-except Exception:
-    pass
-
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from .. import models, db

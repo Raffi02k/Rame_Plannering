@@ -14,13 +14,6 @@ if DATABASE_URL.startswith("sqlite"):
         connect_args={"check_same_thread": False, "timeout": 30},
     )
 else:
-    # DEBUG: Log which user we are connecting with (useful for Vercel troubleshooting)
-    try:
-        debug_user = DATABASE_URL.split("://")[1].split(":")[0]
-        print(f"DATABASE DEBUG: Attempting to connect as user '{debug_user}'")
-    except Exception:
-        print("DATABASE DEBUG: Could not parse DATABASE_URL for logging")
-        
     engine = create_engine(DATABASE_URL)
 
 
